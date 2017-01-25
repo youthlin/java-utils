@@ -139,7 +139,7 @@ public class MailSender {
      */
     public MailSender start(Session session) {
         if (started) {
-            throw new IllegalStateException("start() method already invoked.");
+            throw new IllegalStateException("start() method already called.");
         }
         started = true;
         msg = new MimeMessage(session);
