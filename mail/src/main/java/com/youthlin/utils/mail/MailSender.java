@@ -50,7 +50,7 @@ import java.util.Properties;
  *      .send();//发送
  * </pre>
  */
-@SuppressWarnings({"WeakerAccess", "SameParameterValue"})
+@SuppressWarnings({"WeakerAccess", "SameParameterValue", "unused"})
 public class MailSender {
     /**
      * Session 构造器.
@@ -122,6 +122,7 @@ public class MailSender {
         }
     }
 
+    //region //field
     private static final String default_charset = "UTF-8";//默认字符编码
     private final MimeMultipart content = new MimeMultipart();//邮件的所有内容(body+Attachment)
     private final BodyPart body = new MimeBodyPart();//body
@@ -129,6 +130,7 @@ public class MailSender {
     private boolean started = false;//是否已经设置 Session
     private boolean contentHasSet = false;//是否已经设置过内容
     private Message msg;//每次设置的 Message 主体
+    //endregion //field
 
     /**
      * 从 Session 构造 Message.
@@ -230,13 +232,14 @@ public class MailSender {
         msg.addRecipients(type, addresses);
         return this;
     }
-    //endregion recipients
+    //endregion  //recipients
 
     public MailSender subject(String subject) throws MessagingException {
         msg.setSubject(subject);
         return this;
     }
 
+    //region //content
     public MailSender html(String html) throws MessagingException {
         return content(html, true);
     }
@@ -264,6 +267,9 @@ public class MailSender {
         }
         return this;
     }
+    //endregion //content
+
+    //region //attachment
 
     /**
      * 带附件.
@@ -302,6 +308,7 @@ public class MailSender {
         attachments.add(attach);
         return this;
     }
+    //endregion //attachment
 
     public Message toMessage() throws MessagingException {
         content.removeBodyPart(body);//防止多次调用添加多次
