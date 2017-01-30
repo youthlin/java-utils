@@ -19,7 +19,7 @@ import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
  * <code>__("str");</code><br>
  * <code>_x("str","context");</code><br>
  * <code>_n("single","plural",n);</code><br>
- * <code>_n("single","plural",n,"context");</code><br>
+ * <code>_nx("single","plural",n,"context");</code><br>
  * <p>
  * <code>[main]$ xgettext -k__ -k_x:2c,1 -k_n:1,2 -k_nx:4c,1,2  -o resources/Message.pot java/pack/age/Clazz.java --from-code UTF-8</code>
  * <br><code>[main]$ msgfmt --java2 -d resources -r Message -l zh_CN resources\Message_zh_CN.po (--source生成 java 文件)</code>
