@@ -116,6 +116,9 @@ public class MailSender {
             props.put("mail.debug", Boolean.toString(debug));//必须要是 String 类型
             return this;
         }
+        public SessionBuilder debug() {
+            return debug(true);
+        }
 
         public Session toSession() {
             return Session.getInstance(props, authenticator);
