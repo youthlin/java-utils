@@ -1,6 +1,7 @@
 # Java Utils
 
 1. SMTP Mail Sender
+
    ```
    new MailSender()
         .start(new MailSender.SessionBuilder()
