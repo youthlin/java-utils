@@ -1,5 +1,8 @@
 package com.youthlin.utils.mail;
 
+import net.markenwerk.utils.mail.dkim.DkimMessage;
+import net.markenwerk.utils.mail.dkim.DkimSigner;
+
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 import javax.mail.Address;
@@ -16,8 +19,11 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -34,7 +40,7 @@ import java.util.Properties;
  *          .host("host")
  *          .auth("username", "password")
  *          .ssl(465)   // JDK 7 OK. JDK8 由于安全原因需要替换俩 jar 包
- *          .debug(true)
+ *          .debug()    // 注释这行关闭调试信息的输出
  *          .toSession()
  *      )//Session 只能调用一次 start
  *      .from("email", "DisplayName")//发件人 email,name
@@ -47,8 +53,28 @@ import java.util.Properties;
  *      .attachment("path/to/file", "cid")//内嵌附件
  *      .attachment("path/to/file")//普通附件
  *      .attachment(file)//普通附件
+ *      .dkim(new File("D:/key.der"), "youthlin.com", "xxx.youthlin")//验证发信人身份
  *      .send();//发送
  * </pre>
+ * <p>
+ * 使用 DKIM 验证发信人身份：
+ * <ol>
+ * <li>使用 OpenSSL 生成密钥对, 或者在 http://dkimcore.org/tools/ 生成</li>
+ * <li>再把 Base64 文本格式的私钥转换为 der 二进制证书:<br>
+ * <code>openssl pkcs8 -topk8 -nocrypt -in key.pem -outform der -out key.der</code><br>
+ * 其中 key.pem 是第一步生成的私钥, 以「-----BEGIN RSA PRIVATE KEY-----」开头的文件, key.der 是要保存的文件</li>
+ * <li>把公钥部署到域名的 TXT 记录中, 格式可参加步骤 1 网址.(记录名：xxx._domainkey, 记录值：p=xxx的一串 不含「p=」和末尾冒号)</li>
+ * <li>使用 dkim 方法验证自己的身份:<br>
+ * <code>privateDERKey</code> 是 der 私钥, <code>domain</code> 是域名, <code>selector</code> 是记录名(xxx._domainkey中的xxx)</li>
+ * </ol>
+ * <p>
+ * 注意：<br>
+ * Gmail 对附件要求严格, 对于下列类型的附件(或包含这些文件类型的压缩文件), 即使使用 DKIM 认证仍然会被退信:<br>
+ * <pre>
+ * .ADE、.ADP、.BAT、.CHM、.CMD、.COM、.CPL、.EXE、.HTA、.INS、.ISP、
+ * .JAR、.JS、.JSE、.LIB、.LNK、.MDE、.MSC、.MSI、.MSP、.MST、.PIF、
+ * .SCR、.SCT、.SHB、.SYS、.VB、.VBE、.VBS、.VXD、.WSC、.WSF、.WSH</pre>
+ * 详见<a href="https://support.google.com/mail/answer/6590">某些文件类型被阻止 - Gmail 帮助</a>
  */
 @SuppressWarnings({"WeakerAccess", "SameParameterValue", "unused"})
 public class MailSender {
@@ -116,6 +142,7 @@ public class MailSender {
             props.put("mail.debug", Boolean.toString(debug));//必须要是 String 类型
             return this;
         }
+
         public SessionBuilder debug() {
             return debug(true);
         }
@@ -132,7 +159,8 @@ public class MailSender {
     private final List<BodyPart> attachments = new ArrayList<BodyPart>();//attachments
     private boolean started = false;//是否已经设置 Session
     private boolean contentHasSet = false;//是否已经设置过内容
-    private Message msg;//每次设置的 Message 主体
+    private MimeMessage msg;//每次设置的 Message 主体
+    private DkimSigner signer;//DKIM 邮件认证
     //endregion //field
 
     /**
@@ -313,6 +341,37 @@ public class MailSender {
     }
     //endregion //attachment
 
+    //region //dkim
+    public MailSender dkim(File privateDERKey, String domain, String selector) {
+        try {
+            signer = new DkimSigner(domain, selector, privateDERKey);
+        } catch (Exception e) {
+            signer = null;
+            e.printStackTrace();
+        }
+        return this;
+    }
+
+    public MailSender dkim(byte[] privateDERKey, String domain, String selector) {
+        return dkim(new ByteArrayInputStream(privateDERKey), domain, selector);
+    }
+
+    public MailSender dkim(InputStream privateDERKey, String domain, String selector) {
+        try {
+            signer = new DkimSigner(domain, selector, privateDERKey);
+        } catch (Exception e) {
+            signer = null;
+            e.printStackTrace();
+        }
+        return this;
+    }
+
+    public MailSender dkim(RSAPrivateKey privateKey, String domain, String selector) {
+        signer = new DkimSigner(domain, selector, privateKey);
+        return this;
+    }
+    //endregion
+
     public Message toMessage() throws MessagingException {
         content.removeBodyPart(body);//防止多次调用添加多次
         content.addBodyPart(body);//顺序：body 在 attachment 之前
@@ -321,6 +380,9 @@ public class MailSender {
             content.addBodyPart(attach);
         }
         msg.setContent(content);
+        if (signer != null) {
+            return new DkimMessage(msg, signer);
+        }
         return msg;
     }
 

@@ -13,8 +13,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
+            <groupId>net.markenwerk</groupId>
+            <artifactId>utils-mail-dkim</artifactId>
         </dependency>
     </dependencies>
 
