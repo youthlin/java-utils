@@ -29,7 +29,7 @@ import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
  *
  * @see <a href="http://youthlin.com/?p=1315">http://youthlin.com/20161315.html</a>
  */
-@SuppressWarnings({"SameParameterValue", "WeakerAccess"})
+@SuppressWarnings({"SameParameterValue", "WeakerAccess", "unused"})
 public class Translation {
     /**
      * 默认是空的, 可以在 Project 范围内设置一个默认翻译资源包
