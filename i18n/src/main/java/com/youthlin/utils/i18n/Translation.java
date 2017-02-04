@@ -56,7 +56,7 @@ public class Translation {
         }
     };
     private static Deque<Pair> resources = new LinkedList<Pair>();
-    private static Set<String> names = new HashSet<String>();
+    private static Set<String> domains = new HashSet<String>();
     private static Set<ResourceBundle> catalogs = new HashSet<ResourceBundle>();
 
     private static class Pair {
@@ -96,27 +96,27 @@ public class Translation {
      * <p>
      * 添加一个翻译资源包到队列头部, 翻译时将从队列头部搜索
      */
-    public static boolean addResource(String name, ResourceBundle rb) {
-        notnull(name, "Name");
+    public static boolean addResource(String domain, ResourceBundle rb) {
+        notnull(domain, "domain");
         notnull(rb, "ResourceBundle");
-        Pair pair = new Pair(name, rb);
+        Pair pair = new Pair(domain, rb);
         if (resources.contains(pair)) {
             return false;
         }
         resources.add(pair);
-        names.add(name);
+        domains.add(domain);
         catalogs.add(rb);
         return true;
     }
 
-    public static boolean removeResource(String name, ResourceBundle rb) {
-        Pair p = new Pair(name, rb);
+    public static boolean removeResource(String domain, ResourceBundle rb) {
+        Pair p = new Pair(domain, rb);
         boolean hasName = false;
         boolean hasCatalog = false;
         if (resources.contains(p)) {
             resources.remove(p);
             for (Pair pair : resources) {
-                if (pair.name.equals(name)) {
+                if (pair.name.equals(domain)) {
                     hasName = true;
                 }
                 if (pair.catalog.equals(rb)) {
@@ -124,7 +124,7 @@ public class Translation {
                 }
             }
             if (!hasName) {
-                names.remove(name);
+                domains.remove(domain);
             }
             if (!hasCatalog) {
                 catalogs.remove(rb);
@@ -134,17 +134,17 @@ public class Translation {
         return false;
     }
 
-    public static boolean removeResource(String name) {
-        if (names.contains(name)) {
+    public static boolean removeResource(String domain) {
+        if (domains.contains(domain)) {
             Iterator<Pair> iterator = resources.iterator();
             while (iterator.hasNext()) {
                 Pair p = iterator.next();
-                if (p.name.equals(name)) {
+                if (p.name.equals(domain)) {
                     catalogs.remove(p.catalog);
                     iterator.remove();
                 }
             }
-            names.remove(name);
+            domains.remove(domain);
             return true;
         }
         return false;
@@ -156,7 +156,7 @@ public class Translation {
             while (iterator.hasNext()) {
                 Pair p = iterator.next();
                 if (p.catalog.equals(rb)) {
-                    names.remove(p.name);
+                    domains.remove(p.name);
                     iterator.remove();
                 }
             }
@@ -360,14 +360,14 @@ public class Translation {
     static {
         try {
             ResourceBundle r = ResourceBundle.getBundle("Message");
-            addResource("hello-world", r);
+            addResource(Translation.class.getName(), r);
         } catch (Exception ignore) {
         }
     }
 
     public static void main(String[] args) {
+        System.out.println(Translation.class.getName());
         ResourceBundle r = ResourceBundle.getBundle("Message"/*, java.util.Locale.getDefault()*/);
-        //addResource("lin", r);
         System.out.println(__("Hello, World!"));
         System.out.println(_x("Post", "a post"));
         System.out.println(_x("Post", "to post"));
@@ -375,7 +375,8 @@ public class Translation {
         System.out.println(_n("One Comment", "{0} Comments", 3, 3));
         System.out.println(_nx("One Comment", "{0} Comments", 1, "评论", 1));
         System.out.println(_nx("One Comment", "{0} Comments", 2, "注释", 2));
-        removeResource(r);
+        //removeResource(r);
+        removeResource("com.youthlin.utils.i18n.Translation");
         System.out.println(_nx("One Comment", "{0} Comments", 2, "注释", 2));
         System.out.println(_nx("One Comment", "{0} Comments", 2, "注释", r, 2));
     }
