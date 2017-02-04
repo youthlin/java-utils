@@ -299,6 +299,10 @@ public class Translation {
         }
         return GettextResource2.ngettext(dft, msg, msg_plural, n);
     }
+
+    public static String _n(String msg, String msg_plural, long n, ResourceBundle rb, Object... param) {
+        return MessageFormat.format(_n(msg, msg_plural, n, rb), param);
+    }
     //endregion
 
     //region //_nx
@@ -353,9 +357,17 @@ public class Translation {
         Translation.dft = dft;
     }
 
+    static {
+        try {
+            ResourceBundle r = ResourceBundle.getBundle("Message");
+            addResource("hello-world", r);
+        } catch (Exception ignore) {
+        }
+    }
+
     public static void main(String[] args) {
         ResourceBundle r = ResourceBundle.getBundle("Message"/*, java.util.Locale.getDefault()*/);
-        addResource("lin", r);
+        //addResource("lin", r);
         System.out.println(__("Hello, World!"));
         System.out.println(_x("Post", "a post"));
         System.out.println(_x("Post", "to post"));
