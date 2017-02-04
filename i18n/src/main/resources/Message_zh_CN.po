@@ -19,8 +19,8 @@ msgstr ""
 "Language: zh_CN\n"
 
 #: java\com\youthlin\utils\i18n\Translation.java:328
-msgid "Hello,World"
-msgstr "世界，你好"
+msgid "Hello, World!"
+msgstr "世界，你好！"
 
 #: java\com\youthlin\utils\i18n\Translation.java:329
 msgctxt "a post"

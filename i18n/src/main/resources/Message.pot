@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-30 14:27+0800\n"
+"POT-Creation-Date: 2017-02-04 10:48+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,29 +18,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: java\com\youthlin\utils\i18n\Translation.java:328
-msgid "Hello,World"
+#: java/com/youthlin/utils/i18n/Translation.java:348
+msgid "Hello, World!"
 msgstr ""
 
-#: java\com\youthlin\utils\i18n\Translation.java:329
+#: java/com/youthlin/utils/i18n/Translation.java:349
 msgctxt "a post"
 msgid "Post"
 msgstr ""
 
-#: java\com\youthlin\utils\i18n\Translation.java:330
+#: java/com/youthlin/utils/i18n/Translation.java:350
 msgctxt "to post"
 msgid "Post"
 msgstr ""
 
-#: java\com\youthlin\utils\i18n\Translation.java:331
-#: java\com\youthlin\utils\i18n\Translation.java:332
+#: java/com/youthlin/utils/i18n/Translation.java:351
+#: java/com/youthlin/utils/i18n/Translation.java:352
 #, java-format
 msgid "One Comment"
 msgid_plural "{0} Comments"
 msgstr[0] ""
 msgstr[1] ""
 
-#: java\com\youthlin\utils\i18n\Translation.java:333
+#: java/com/youthlin/utils/i18n/Translation.java:353
 #, java-format
 msgctxt "评论"
 msgid "One Comment"
@@ -48,7 +48,9 @@ msgid_plural "{0} Comments"
 msgstr[0] ""
 msgstr[1] ""
 
-#: java\com\youthlin\utils\i18n\Translation.java:334
+#: java/com/youthlin/utils/i18n/Translation.java:354
+#: java/com/youthlin/utils/i18n/Translation.java:356
+#: java/com/youthlin/utils/i18n/Translation.java:357
 #, java-format
 msgctxt "注释"
 msgid "One Comment"

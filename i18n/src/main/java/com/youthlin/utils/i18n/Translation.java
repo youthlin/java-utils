@@ -89,6 +89,8 @@ public class Translation {
         }
     }
 
+    //region // add/remove
+
     /**
      * 注册一个翻译包.
      * <p>
@@ -163,6 +165,7 @@ public class Translation {
         }
         return false;
     }
+    //endregion
 
     private static void notnull(Object o, String parameterName) {
         if (o == null) {
@@ -170,6 +173,7 @@ public class Translation {
         }
     }
 
+    //region //__
     public static String __(String msg) {
         for (Pair p : resources) {
             String s = GettextResource2.gettextnull(p.catalog, msg);
@@ -211,7 +215,9 @@ public class Translation {
     public static String __(String fmt, ResourceBundle rb, Object... params) {
         return MessageFormat.format(__(fmt, rb), params);
     }
+    //endregion
 
+    //region //_x
     public static String _x(String msg, String ctx) {
         for (Pair p : resources) {
             String s = GettextResource2.gettextnull(p.catalog, ctx + CONTEXT_GLUE + msg);
@@ -253,7 +259,9 @@ public class Translation {
     public static String _x(String msg, String ctx, ResourceBundle rb, Object... param) {
         return MessageFormat.format(_x(msg, ctx, rb), param);
     }
+    //endregion
 
+    //region //_n
     public static String _n(String msg, String msg_plural, long n) {
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, msg, n);
@@ -291,7 +299,9 @@ public class Translation {
         }
         return GettextResource2.ngettext(dft, msg, msg_plural, n);
     }
+    //endregion
 
+    //region //_nx
     public static String _nx(String msg, String plural, long n, String ctx) {
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, ctx + CONTEXT_GLUE + msg, n);
@@ -333,6 +343,7 @@ public class Translation {
     public static String _nx(String msg, String plural, long n, String ctx, ResourceBundle catalog, Object... param) {
         return MessageFormat.format(_nx(msg, plural, n, ctx, catalog), param);
     }
+    //endregion
 
     public static ResourceBundle getDft() {
         return dft;
@@ -345,7 +356,7 @@ public class Translation {
     public static void main(String[] args) {
         ResourceBundle r = ResourceBundle.getBundle("Message"/*, java.util.Locale.getDefault()*/);
         addResource("lin", r);
-        System.out.println(__("Hello,World"));
+        System.out.println(__("Hello, World!"));
         System.out.println(_x("Post", "a post"));
         System.out.println(_x("Post", "to post"));
         System.out.println(_n("One Comment", "{0} Comments", 1, 1));
