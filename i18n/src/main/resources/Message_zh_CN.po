@@ -7,40 +7,50 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-30 14:28+0800\n"
-"PO-Revision-Date: 2017-01-30 15:04+0800\n"
+"POT-Creation-Date: 2017-02-06 00:19+0800\n"
+"PO-Revision-Date: 2017-02-06 00:23+0800\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
-"X-Generator: Poedit 1.8.9\n"
+"X-Generator: Poedit 1.8.11\n"
 "Last-Translator: YouthLin Chen <root@youthlin.com>\n"
 "Language: zh_CN\n"
 
-#: java\com\youthlin\utils\i18n\Translation.java:328
+#: java/com/youthlin/utils/i18n/Translation.java:373
 msgid "Hello, World!"
 msgstr "世界，你好！"
 
-#: java\com\youthlin\utils\i18n\Translation.java:329
+#: java/com/youthlin/utils/i18n/Translation.java:374
+#, java-format
+msgid "Hello, {0}!"
+msgstr "你好，{0}！"
+
+#: java/com/youthlin/utils/i18n/Translation.java:375
+#, java-format
+msgid "Hello, {0}! Now is {1,date} {1,time}"
+msgstr "你好，{0}！现在是 {1,date} {1,time}"
+
+#: java/com/youthlin/utils/i18n/Translation.java:376
 msgctxt "a post"
 msgid "Post"
 msgstr "文章"
 
-#: java\com\youthlin\utils\i18n\Translation.java:330
+#: java/com/youthlin/utils/i18n/Translation.java:377
 msgctxt "to post"
 msgid "Post"
 msgstr "发表"
 
-#: java\com\youthlin\utils\i18n\Translation.java:331
-#: java\com\youthlin\utils\i18n\Translation.java:332
+#: java/com/youthlin/utils/i18n/Translation.java:378
+#: java/com/youthlin/utils/i18n/Translation.java:379
 #, java-format
 msgid "One Comment"
 msgid_plural "{0} Comments"
-msgstr[0] "1 条评论"
-msgstr[1] "{0} 条评论"
+msgstr[0] "1 评论"
+msgstr[1] "{0} 评论"
 
-#: java\com\youthlin\utils\i18n\Translation.java:333
+#: java/com/youthlin/utils/i18n/Translation.java:380
 #, java-format
 msgctxt "评论"
 msgid "One Comment"
@@ -48,10 +58,13 @@ msgid_plural "{0} Comments"
 msgstr[0] "1 条评论"
 msgstr[1] "{0} 条评论"
 
-#: java\com\youthlin\utils\i18n\Translation.java:334
+#: java/com/youthlin/utils/i18n/Translation.java:381
+#: java/com/youthlin/utils/i18n/Translation.java:384
+#: java/com/youthlin/utils/i18n/Translation.java:385
+#: java/com/youthlin/utils/i18n/Translation.java:386
 #, java-format
 msgctxt "注释"
 msgid "One Comment"
 msgid_plural "{0} Comments"
-msgstr[0] "1 条注释"
-msgstr[1] "{0} 条注释"
+msgstr[0] "1 则注释"
+msgstr[1] "{0} 则注释"

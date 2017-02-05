@@ -1,11 +1,13 @@
 package com.youthlin.utils.i18n;
 
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -21,7 +23,7 @@ import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
  * <code>_n("single","plural",n);</code><br>
  * <code>_nx("single","plural",n,"context");</code><br>
  * <p>
- * <code>[main]$ xgettext -k__ -k_x:2c,1 -k_n:1,2 -k_nx:4c,1,2  -o resources/Message.pot java/pack/age/Clazz.java --from-code UTF-8</code>
+ * <code>[main]$ xgettext -k__ -k_x:2c,1 -k_n:1,2 -k_nx:3c,1,2  -o resources/Message.pot java/pack/age/Clazz.java --from-code UTF-8</code>
  * <br><code>[main]$ msgfmt --java2 -d resources -r Message -l zh_CN resources\Message_zh_CN.po (--source生成 java 文件)</code>
  * <br><code>addResource("id", ResourceBundle.getBundle("Message"));</code>
  * <p>
@@ -184,10 +186,6 @@ public class Translation {
         return GettextResource2.gettext(dft, msg);
     }
 
-    public static String __(String fmt, Object... params) {
-        return MessageFormat.format(__(fmt), params);
-    }
-
     public static String __(String msg, String domain) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
@@ -200,16 +198,20 @@ public class Translation {
         return GettextResource2.gettext(dft, msg);
     }
 
-    public static String __(String fmt, String domain, Object... params) {
-        return MessageFormat.format(__(fmt, domain), params);
-    }
-
     public static String __(String msg, ResourceBundle rb) {
         String s = GettextResource2.gettextnull(rb, msg);
         if (s != null) {
             return s;
         }
         return GettextResource2.gettext(rb, msg);
+    }
+
+    public static String __(String fmt, int unused, Object... params) {
+        return MessageFormat.format(__(fmt), params);
+    }
+
+    public static String __(String fmt, String domain, Object... params) {
+        return MessageFormat.format(__(fmt, domain), params);
     }
 
     public static String __(String fmt, ResourceBundle rb, Object... params) {
@@ -228,10 +230,6 @@ public class Translation {
         return GettextResource2.pgettext(dft, ctx, msg);
     }
 
-    public static String _x(String msg, String ctx, Object... param) {
-        return MessageFormat.format(_x(msg, ctx), param);
-    }
-
     public static String _x(String msg, String ctx, String domain) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
@@ -244,10 +242,6 @@ public class Translation {
         return GettextResource2.pgettext(dft, ctx, msg);
     }
 
-    public static String _x(String msg, String ctx, String domain, Object... param) {
-        return MessageFormat.format(_x(msg, ctx, domain), param);
-    }
-
     public static String _x(String msg, String ctx, ResourceBundle rb) {
         String s = GettextResource2.gettextnull(rb, ctx + CONTEXT_GLUE + msg);
         if (s != null) {
@@ -256,8 +250,16 @@ public class Translation {
         return GettextResource2.pgettext(rb, ctx, msg);
     }
 
-    public static String _x(String msg, String ctx, ResourceBundle rb, Object... param) {
-        return MessageFormat.format(_x(msg, ctx, rb), param);
+    public static String _x(String fmt, String ctx, int unused, Object... param) {
+        return MessageFormat.format(_x(fmt, ctx), param);
+    }
+
+    public static String _x(String fmt, String ctx, String domain, Object... param) {
+        return MessageFormat.format(_x(fmt, ctx, domain), param);
+    }
+
+    public static String _x(String fmt, String ctx, ResourceBundle rb, Object... param) {
+        return MessageFormat.format(_x(fmt, ctx, rb), param);
     }
     //endregion
 
@@ -272,11 +274,7 @@ public class Translation {
         return GettextResource2.ngettext(dft, msg, msg_plural, n);
     }
 
-    public static String _n(String msg, String msg_plural, long n, Object... param) {
-        return MessageFormat.format(_n(msg, msg_plural, n), param);
-    }
-
-    public static String _n(String msg, String msg_plural, long n, String domain) {
+    public static String _n(String msg, String msg_plural, String domain, long n) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.ngettextnull(p.catalog, msg, n);
@@ -288,11 +286,7 @@ public class Translation {
         return GettextResource2.ngettext(dft, msg, msg_plural, n);
     }
 
-    public static String _n(String msg, String msg_plural, long n, String domain, Object... param) {
-        return MessageFormat.format(_n(msg, msg_plural, n, domain), param);
-    }
-
-    public static String _n(String msg, String msg_plural, long n, ResourceBundle rb) {
+    public static String _n(String msg, String msg_plural, ResourceBundle rb, long n) {
         String s = GettextResource2.ngettextnull(rb, msg, n);
         if (s != null) {
             return s;
@@ -300,13 +294,21 @@ public class Translation {
         return GettextResource2.ngettext(dft, msg, msg_plural, n);
     }
 
-    public static String _n(String msg, String msg_plural, long n, ResourceBundle rb, Object... param) {
+    public static String _n(String msg, String msg_plural, long n, Object... param) {
+        return MessageFormat.format(_n(msg, msg_plural, n), param);
+    }
+
+    public static String _n(String msg, String msg_plural, String domain, long n, Object... param) {
+        return MessageFormat.format(_n(msg, msg_plural, domain, n), param);
+    }
+
+    public static String _n(String msg, String msg_plural, ResourceBundle rb, long n, Object... param) {
         return MessageFormat.format(_n(msg, msg_plural, n, rb), param);
     }
     //endregion
 
     //region //_nx
-    public static String _nx(String msg, String plural, long n, String ctx) {
+    public static String _nx(String msg, String plural, String ctx, long n) {
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, ctx + CONTEXT_GLUE + msg, n);
             if (s != null) {
@@ -316,11 +318,7 @@ public class Translation {
         return GettextResource2.npgettext(dft, ctx, msg, plural, n);
     }
 
-    public static String _nx(String msg, String plural, long n, String ctx, Object... param) {
-        return MessageFormat.format(_nx(msg, plural, n, ctx), param);
-    }
-
-    public static String _nx(String msg, String plural, long n, String ctx, String domain) {
+    public static String _nx(String msg, String plural, String ctx, String domain, long n) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.ngettextnull(p.catalog, ctx + CONTEXT_GLUE + msg, n);
@@ -332,11 +330,7 @@ public class Translation {
         return GettextResource2.npgettext(dft, ctx, msg, plural, n);
     }
 
-    public static String _nx(String msg, String plural, long n, String ctx, String domain, Object... param) {
-        return MessageFormat.format(_nx(msg, plural, n, ctx, domain), param);
-    }
-
-    public static String _nx(String msg, String plural, long n, String ctx, ResourceBundle catalog) {
+    public static String _nx(String msg, String plural, String ctx, ResourceBundle catalog, long n) {
         String s = GettextResource2.ngettextnull(catalog, ctx + CONTEXT_GLUE + msg, n);
         if (s != null) {
             return s;
@@ -344,8 +338,16 @@ public class Translation {
         return GettextResource2.npgettext(catalog, ctx, msg, plural, n);
     }
 
-    public static String _nx(String msg, String plural, long n, String ctx, ResourceBundle catalog, Object... param) {
-        return MessageFormat.format(_nx(msg, plural, n, ctx, catalog), param);
+    public static String _nx(String msg, String plural, String ctx, long n, Object... param) {
+        return MessageFormat.format(_nx(msg, plural, ctx, n), param);
+    }
+
+    public static String _nx(String msg, String plural, String ctx, String domain, long n, Object... param) {
+        return MessageFormat.format(_nx(msg, plural, ctx, domain, n), param);
+    }
+
+    public static String _nx(String msg, String plural, String ctx, ResourceBundle catalog, long n, Object... param) {
+        return MessageFormat.format(_nx(msg, plural, ctx, catalog, n), param);
     }
     //endregion
 
@@ -357,27 +359,46 @@ public class Translation {
         Translation.dft = dft;
     }
 
+    private static String domain = Translation.class.getName();
+    private static ResourceBundle r = ResourceBundle.getBundle("Message"/*, java.util.Locale.getDefault()*/);
+
     static {
         try {
             ResourceBundle r = ResourceBundle.getBundle("Message");
-            addResource(Translation.class.getName(), r);
+            addResource(domain, r);
         } catch (Exception ignore) {
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(Translation.class.getName());
-        ResourceBundle r = ResourceBundle.getBundle("Message"/*, java.util.Locale.getDefault()*/);
+        System.out.println(domain);
+        print();
+        removeResource(domain);
+        print();
+        r = ResourceBundle.getBundle("Message", Locale.ENGLISH);
+        addResource(domain, r);
+        print();
+        removeResource(domain, r);
+        r = ResourceBundle.getBundle("Message");
+        addResource(domain, r);
+        print();
+    }
+
+    public static void print() {
+        System.out.println("------------------------");
         System.out.println(__("Hello, World!"));
+        System.out.println(__("Hello, {0}!", 0, "Lin"));
+        System.out.println(__("Hello, {0}! Now is {1,date} {1,time}", 0, "World", new Date()));
         System.out.println(_x("Post", "a post"));
         System.out.println(_x("Post", "to post"));
         System.out.println(_n("One Comment", "{0} Comments", 1, 1));
         System.out.println(_n("One Comment", "{0} Comments", 3, 3));
-        System.out.println(_nx("One Comment", "{0} Comments", 1, "评论", 1));
-        System.out.println(_nx("One Comment", "{0} Comments", 2, "注释", 2));
+        System.out.println(_nx("One Comment", "{0} Comments", "评论", 1, 1));
+        System.out.println(_nx("One Comment", "{0} Comments", "注释", 2, 2));
         //removeResource(r);
-        removeResource("com.youthlin.utils.i18n.Translation");
-        System.out.println(_nx("One Comment", "{0} Comments", 2, "注释", 2));
-        System.out.println(_nx("One Comment", "{0} Comments", 2, "注释", r, 2));
+        System.out.println(_nx("One Comment", "{0} Comments", "注释", 2, 2));
+        System.out.println(_nx("One Comment", "{0} Comments", "注释", domain, 2, 2));
+        System.out.println(_nx("One Comment", "{0} Comments", "注释", r, 2, 2));
+
     }
 }
