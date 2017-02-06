@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -33,10 +34,7 @@ import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
  */
 @SuppressWarnings({"SameParameterValue", "WeakerAccess", "unused"})
 public class Translation {
-    /**
-     * 默认是空的, 可以在 Project 范围内设置一个默认翻译资源包
-     */
-    private static ResourceBundle dft = new ResourceBundle() {
+    public static final ResourceBundle empty = new ResourceBundle() {
         @Override
         protected Object handleGetObject(String key) {
             return null;
@@ -57,38 +55,18 @@ public class Translation {
             };
         }
     };
+    public static final String domain = Translation.class.getName();
+
+    private static ResourceBundle dft = empty;
     private static Deque<Pair> resources = new LinkedList<Pair>();
     private static Set<String> domains = new HashSet<String>();
     private static Set<ResourceBundle> catalogs = new HashSet<ResourceBundle>();
+    private static boolean verbose = false;
 
-    private static class Pair {
-        final String name;
-        final ResourceBundle catalog;
+    private static ResourceBundle r = getBundle("Message");
 
-        private Pair(String name, ResourceBundle catalog) {
-            notnull(name, "name");
-            notnull(catalog, "catalog");
-            this.name = name;
-            this.catalog = catalog;
-        }
-
-        /**
-         * 重写 equals 和 hashcode 用于 集合类
-         */
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Pair pair = (Pair) o;
-            return name.equals(pair.name) && catalog.equals(pair.catalog);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = name.hashCode();
-            result = 31 * result + catalog.hashCode();
-            return result;
-        }
+    static {
+        addResource(domain, r);
     }
 
     //region // add/remove
@@ -101,6 +79,10 @@ public class Translation {
     public static boolean addResource(String domain, ResourceBundle rb) {
         notnull(domain, "domain");
         notnull(rb, "ResourceBundle");
+        if (rb.equals(dft)) {
+            if (verbose) System.err.println("dft is no need to add.");
+            return false;//dft 就没有必要添加了
+        }
         Pair pair = new Pair(domain, rb);
         if (resources.contains(pair)) {
             return false;
@@ -167,15 +149,9 @@ public class Translation {
         }
         return false;
     }
-    //endregion
+    //endregion // add/remove
 
-    private static void notnull(Object o, String parameterName) {
-        if (o == null) {
-            throw new NullPointerException("The parameter: '" + parameterName + "' should be not null");
-        }
-    }
-
-    //region //__
+    //region // __
     public static String __(String msg) {
         for (Pair p : resources) {
             String s = GettextResource2.gettextnull(p.catalog, msg);
@@ -217,9 +193,9 @@ public class Translation {
     public static String __(String fmt, ResourceBundle rb, Object... params) {
         return MessageFormat.format(__(fmt, rb), params);
     }
-    //endregion
+    //endregion // __
 
-    //region //_x
+    //region // _x
     public static String _x(String msg, String ctx) {
         for (Pair p : resources) {
             String s = GettextResource2.gettextnull(p.catalog, ctx + CONTEXT_GLUE + msg);
@@ -261,9 +237,9 @@ public class Translation {
     public static String _x(String fmt, String ctx, ResourceBundle rb, Object... param) {
         return MessageFormat.format(_x(fmt, ctx, rb), param);
     }
-    //endregion
+    //endregion // _x
 
-    //region //_n
+    //region // _n
     public static String _n(String msg, String msg_plural, long n) {
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, msg, n);
@@ -305,9 +281,9 @@ public class Translation {
     public static String _n(String msg, String msg_plural, ResourceBundle rb, long n, Object... param) {
         return MessageFormat.format(_n(msg, msg_plural, n, rb), param);
     }
-    //endregion
+    //endregion // _n
 
-    //region //_nx
+    //region // _nx
     public static String _nx(String msg, String plural, String ctx, long n) {
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, ctx + CONTEXT_GLUE + msg, n);
@@ -349,43 +325,72 @@ public class Translation {
     public static String _nx(String msg, String plural, String ctx, ResourceBundle catalog, long n, Object... param) {
         return MessageFormat.format(_nx(msg, plural, ctx, catalog, n), param);
     }
-    //endregion
+    //endregion  // _nx
+
+    private static void notnull(Object o, String parameterName) {
+        if (o == null) {
+            throw new NullPointerException("The parameter: '" + parameterName + "' should be not null");
+        }
+    }
 
     public static ResourceBundle getDft() {
         return dft;
     }
 
     public static void setDft(ResourceBundle dft) {
+        notnull(dft, "dft");
         Translation.dft = dft;
     }
 
-    private static String domain = Translation.class.getName();
-    private static ResourceBundle r = ResourceBundle.getBundle("Message"/*, java.util.Locale.getDefault()*/);
+    public static boolean isVerbose() {
+        return verbose;
+    }
 
-    static {
+    public static void setVerbose(boolean verbose) {
+        Translation.verbose = verbose;
+    }
+
+    public static ResourceBundle getBundle(String baseName) {
+        return getBundle(baseName, Locale.getDefault());
+    }
+
+    public static ResourceBundle getBundle(String baseName, Locale locale) {
+        /*
+         * ResourceBundle.getBundle(baseName, locale) 加载顺序：
+         * baseName.locale.class -> baseName.dftLocale.class -> baseName.class
+         */
+        ResourceBundle bundle = null;
         try {
-            ResourceBundle r = ResourceBundle.getBundle("Message");
-            addResource(domain, r);
-        } catch (Exception ignore) {
+            bundle = ResourceBundle.getBundle(baseName, locale);
+        } catch (MissingResourceException e) {
+            if (verbose)
+                System.err.println("Can not find resources with locale " + locale + ". using default resources.");
         }
+        if (bundle != null && bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
+            return bundle;
+        }
+        return dft;
     }
 
     public static void main(String[] args) {
         System.out.println(domain);
+        System.out.println("默认：------------------------");
         print();
         removeResource(domain);
+        System.out.println("移除后：------------------------");
         print();
-        r = ResourceBundle.getBundle("Message", Locale.ENGLISH);
+        r = getBundle("Message", Locale.FRENCH);
         addResource(domain, r);
+        System.out.println("Fr：------------------------");
         print();
         removeResource(domain, r);
-        r = ResourceBundle.getBundle("Message");
+        r = getBundle("Message");
         addResource(domain, r);
+        System.out.println("默认：------------------------");
         print();
     }
 
     public static void print() {
-        System.out.println("------------------------");
         System.out.println(__("Hello, World!"));
         System.out.println(__("Hello, {0}!", 0, "Lin"));
         System.out.println(__("Hello, {0}! Now is {1,date} {1,time}", 0, "World", new Date()));
@@ -400,5 +405,36 @@ public class Translation {
         System.out.println(_nx("One Comment", "{0} Comments", "注释", domain, 2, 2));
         System.out.println(_nx("One Comment", "{0} Comments", "注释", r, 2, 2));
 
+    }
+
+    /*私有内部类. 用于添加至 Queue 检查重复.*/
+    private static class Pair {
+        final String name;
+        final ResourceBundle catalog;
+
+        private Pair(String name, ResourceBundle catalog) {
+            notnull(name, "name");
+            notnull(catalog, "catalog");
+            this.name = name;
+            this.catalog = catalog;
+        }
+
+        /**
+         * 重写 equals 和 hashcode 用于 集合类
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Pair pair = (Pair) o;
+            return name.equals(pair.name) && catalog.equals(pair.catalog);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name.hashCode();
+            result = 31 * result + catalog.hashCode();
+            return result;
+        }
     }
 }

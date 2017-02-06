@@ -9,7 +9,10 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * 把父类<code>GettextResource</code>两个私有方法变成包范围
+ * 把父类<code>GettextResource</code>两个私有方法变成包范围.
+ * <p>
+ * 非公开类，包可见权限.
+ * <p>
  * Created by lin on 2017-01-30-030.
  */
 abstract class GettextResource2 extends GettextResource {
