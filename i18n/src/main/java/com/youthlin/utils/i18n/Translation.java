@@ -79,8 +79,8 @@ public class Translation {
     public static boolean addResource(String domain, ResourceBundle rb) {
         notnull(domain, "domain");
         notnull(rb, "ResourceBundle");
-        if (rb.equals(dft)) {
-            if (verbose) System.err.println("dft is no need to add.");
+        if (rb.equals(dft) || rb.equals(empty)) {
+            if (verbose) System.err.println("dft/empty is no need to add.");
             return false;//dft 就没有必要添加了
         }
         Pair pair = new Pair(domain, rb);
