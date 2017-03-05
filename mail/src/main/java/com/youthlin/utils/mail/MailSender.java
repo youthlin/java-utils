@@ -21,8 +21,9 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +36,8 @@ import java.util.Properties;
  * <p>
  * 示例:
  * <pre>
- * new MailSender()
- *      .start(new MailSender.SessionBuilder()
+ * MailSender
+ *      .newInstance(MailSender.newSessionBuilder()
  *          .host("host")
  *          .auth("username", "password")
  *          .ssl(465)   // JDK 7 OK. JDK8 由于安全原因需要替换俩 jar 包
@@ -78,13 +79,278 @@ import java.util.Properties;
  */
 @SuppressWarnings({"WeakerAccess", "SameParameterValue", "unused"})
 public class MailSender {
+    //region //field
+    private static final String default_charset = "UTF-8";//默认字符编码
+    private final MimeMultipart content = new MimeMultipart();//邮件的所有内容(body+Attachment)
+    private final BodyPart body = new MimeBodyPart();//body
+    private final List<BodyPart> attachments = new ArrayList<BodyPart>();//attachments
+    private String charset = default_charset;
+    private boolean contentHasSet = false;//是否已经设置过内容
+    private MimeMessage msg;//每次设置的 Message 主体
+    private DkimSigner signer;//DKIM 邮件认证
+
+    private MailSender() {
+    }
+
+    /**
+     * 从 Session 构造 Message.
+     *
+     * @throws IllegalStateException 当已经调用过本方法再次调用时抛出
+     */
+    public static MailSender newInstance(Session session) {
+        return newInstance(session, default_charset);
+    }
+    //endregion //field
+
+    public static MailSender newInstance(Session session, String charset) {
+        Charset.forName(charset);//throw IllegalCharsetNameException / UnsupportedCharsetException
+        return new MailSender().start(session, charset);
+    }
+
+    public static SessionBuilder newSessionBuilder() {
+        return new SessionBuilder();
+    }
+
+    private MailSender start(Session session, String charset) {
+        this.charset = charset;
+        msg = new MimeMessage(session);
+        return this;
+    }
+
+    public MailSender from(String email) throws MessagingException {
+        msg.setFrom(new InternetAddress(email));
+        return this;
+    }
+
+    public MailSender from(String email, String name) throws MessagingException {
+        try {
+            msg.setFrom(new InternetAddress(email, name, charset));
+        } catch (UnsupportedEncodingException e) {
+            from(email);
+        }
+        return this;
+    }
+
+    //region  //recipients
+    public MailSender to(String email) throws MessagingException {
+        return to(toAddresses(new String[]{email}, null));
+    }
+
+    public MailSender to(String email, String name) throws MessagingException {
+        return to(toAddresses(new String[]{email}, new String[]{name}));
+    }
+
+    public MailSender to(String[] emails) throws MessagingException {
+        return to(toAddresses(emails, null));
+    }
+
+    public MailSender to(String[] emails, String[] names) throws MessagingException {
+        return to(toAddresses(emails, names));
+    }
+
+    public MailSender to(Address... addresses) throws MessagingException {
+        return addRecipients(Message.RecipientType.TO, addresses);
+    }
+
+    public MailSender cc(String email) throws MessagingException {
+        return cc(toAddresses(new String[]{email}, null));
+    }
+
+    public MailSender cc(String email, String name) throws MessagingException {
+        return cc(toAddresses(new String[]{email}, new String[]{name}));
+    }
+
+    public MailSender cc(String[] emails) throws MessagingException {
+        return cc(toAddresses(emails, null));
+    }
+
+    public MailSender cc(String[] emails, String[] names) throws MessagingException {
+        return cc(toAddresses(emails, names));
+    }
+
+    public MailSender cc(Address... address) throws MessagingException {
+        return addRecipients(Message.RecipientType.CC, address);
+    }
+
+    public MailSender bcc(String email) throws MessagingException {
+        return bcc(toAddresses(new String[]{email}, null));
+    }
+
+    public MailSender bcc(String email, String name) throws MessagingException {
+        return bcc(toAddresses(new String[]{email}, new String[]{name}));
+    }
+
+    public MailSender bcc(String[] emails) throws MessagingException {
+        return bcc(toAddresses(emails, null));
+    }
+
+    public MailSender bcc(String[] emails, String[] names) throws MessagingException {
+        return bcc(toAddresses(emails, names));
+    }
+
+    public MailSender bcc(Address... address) throws MessagingException {
+        return addRecipients(Message.RecipientType.BCC, address);
+    }
+
+    private Address[] toAddresses(String[] emails, String[] names) throws AddressException {
+        int eLen = emails.length;
+        Address[] addresses = new Address[eLen];
+        if (names != null && names.length == eLen) {//email 和 name 能对上时
+            try {
+                for (int i = 0; i < eLen; i++) {
+                    addresses[i] = new InternetAddress(emails[i], names[i], charset);
+                }
+                return addresses;
+            } catch (UnsupportedEncodingException ignore) {
+            }
+        }
+        for (int i = 0; i < eLen; i++) {//对不上 或 异常
+            addresses[i] = new InternetAddress(emails[i]);
+        }
+        return addresses;
+    }
+
+    private MailSender addRecipients(Message.RecipientType type, Address[] addresses) throws MessagingException {
+        msg.addRecipients(type, addresses);
+        return this;
+    }
+
+    public MailSender subject(String subject) throws MessagingException {
+        msg.setSubject(subject);
+        return this;
+    }
+    //endregion  //recipients
+
+    //region //content
+    public MailSender html(String html) throws MessagingException {
+        return content(html, true);
+    }
+
+    public MailSender text(String plain) throws MessagingException {
+        return content(plain, false);
+    }
+
+    /**
+     * 设置邮件内容.
+     * <p>
+     * 也可以使用 <code>html()</code> 或 <code>text()</code> 设置, 但只能设置一次内容, 否则将抛出异常.
+     *
+     * @throws IllegalStateException 当多次设置邮件内容时抛出.
+     */
+    public MailSender content(String content, boolean isHtml) throws MessagingException {
+        if (contentHasSet) {
+            throw new IllegalStateException("Content already set.");
+        }
+        contentHasSet = true;
+        if (isHtml) {
+            body.setContent(content, "text/html;charset=" + charset);
+        } else {
+            body.setContent(content, "text/plain;charset=" + charset);
+        }
+        return this;
+    }
+
+    /**
+     * 带附件.
+     * <p>
+     * 在「附件」中显示.
+     */
+    public MailSender attachment(String pathToFile) throws MessagingException {
+        return attachment(pathToFile, null);
+    }
+    //endregion //content
+
+    //region //attachment
+
+    /**
+     * 带附件.
+     * <p>
+     * 没有设置 cid 则只在附件中显示，设置了 cid 则 对应 html 邮件内容. 如：&lt;img src="cid:img1"/>
+     * Outlook - cid 只支持图片, 文件的 cid 在 a 标签 href 属性中不起作用，只在附件中显示
+     * QQ      - cid 支持二进制文件，有 cid 的附件将不会在「附件」中显示
+     */
+    public MailSender attachment(String pathToFile, String cid) throws MessagingException {
+        return attachment(new File(pathToFile), cid);
+    }
+
+    public MailSender attachment(File file) throws MessagingException {
+        return attachment(file, null);
+    }
+
+    public MailSender attachment(File file, String cid) throws MessagingException {
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("File Not Found: " + file.getAbsolutePath());
+        }
+        BodyPart attach = new MimeBodyPart();
+        attach.setDataHandler(new DataHandler(new FileDataSource(file)));
+        try {
+            attach.setFileName(MimeUtility.encodeWord(file.getName(), charset, null));
+        } catch (UnsupportedEncodingException ignore) {
+        }
+        if (cid != null) {
+            attach.setHeader("Content-ID", cid);
+        }
+        attachments.add(attach);
+        return this;
+    }
+
+    //region //dkim
+    public MailSender dkim(File privateDERKey, String domain, String selector) {
+        try {
+            signer = new DkimSigner(domain, selector, privateDERKey);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("dkim exception. file = " + privateDERKey.getAbsolutePath()
+                    + ", domain = " + domain + ", selector = " + selector, e);
+        }
+        return this;
+    }
+    //endregion //attachment
+
+    public MailSender dkim(byte[] privateDERKey, String domain, String selector) {
+        return dkim(new ByteArrayInputStream(privateDERKey), domain, selector);
+    }
+
+    public MailSender dkim(InputStream privateDERKey, String domain, String selector) {
+        try {
+            signer = new DkimSigner(domain, selector, privateDERKey);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("dkim exception. file = " + privateDERKey
+                    + ", domain = " + domain + ", selector = " + selector, e);
+        }
+        return this;
+    }
+
+    public MailSender dkim(RSAPrivateKey privateKey, String domain, String selector) {
+        signer = new DkimSigner(domain, selector, privateKey);
+        return this;
+    }
+
+    public Message toMessage() throws MessagingException {
+        content.removeBodyPart(body);//防止多次调用添加多次
+        content.addBodyPart(body);//顺序：body 在 attachment 之前
+        for (BodyPart attach : attachments) {
+            content.removeBodyPart(attach);
+            content.addBodyPart(attach);
+        }
+        msg.setContent(content);
+        if (signer != null) {
+            return new DkimMessage(msg, signer);
+        }
+        return msg;
+    }
+    //endregion
+
+    public void send() throws MessagingException {
+        Transport.send(toMessage(), msg.getAllRecipients());
+    }
+
     /**
      * Session 构造器.
      * Session 是与服务器通信的前提环境, 如 host username password 等在此设置.
      * <p>
      * 示例:
      * <pre>
-     * new MailSender.SessionBuilder()
+     * MailSender.newSessionBuilder()
      *         .host("host")
      *         .auth("username", "password")
      *         .ssl(465)
@@ -94,6 +360,9 @@ public class MailSender {
     public static class SessionBuilder {
         private final Properties props = new Properties();
         private Authenticator authenticator = null;
+
+        private SessionBuilder() {
+        }
 
         public SessionBuilder host(String host) {
             props.put("mail.host", host);
@@ -150,243 +419,5 @@ public class MailSender {
         public Session toSession() {
             return Session.getInstance(props, authenticator);
         }
-    }
-
-    //region //field
-    private static final String default_charset = "UTF-8";//默认字符编码
-    private final MimeMultipart content = new MimeMultipart();//邮件的所有内容(body+Attachment)
-    private final BodyPart body = new MimeBodyPart();//body
-    private final List<BodyPart> attachments = new ArrayList<BodyPart>();//attachments
-    private boolean started = false;//是否已经设置 Session
-    private boolean contentHasSet = false;//是否已经设置过内容
-    private MimeMessage msg;//每次设置的 Message 主体
-    private DkimSigner signer;//DKIM 邮件认证
-    //endregion //field
-
-    /**
-     * 从 Session 构造 Message.
-     *
-     * @throws IllegalStateException 当已经调用过本方法再次调用时抛出
-     */
-    public MailSender start(Session session) {
-        if (started) {
-            throw new IllegalStateException("start() method already called.");
-        }
-        started = true;
-        msg = new MimeMessage(session);
-        return this;
-    }
-
-    public MailSender from(String email) throws MessagingException {
-        msg.setFrom(new InternetAddress(email));
-        return this;
-    }
-
-    public MailSender from(String email, String name) throws MessagingException {
-        try {
-            msg.setFrom(new InternetAddress(email, name, default_charset));
-        } catch (UnsupportedEncodingException e) {
-            from(email);
-        }
-        return this;
-    }
-
-    //region  //recipients
-    public MailSender to(String email) throws MessagingException {
-        return to(new String[]{email}, null);
-    }
-
-    public MailSender to(String email, String name) throws MessagingException {
-        return to(new String[]{email}, new String[]{name});
-    }
-
-    public MailSender to(String[] emails) throws MessagingException {
-        return to(emails, null);
-    }
-
-    public MailSender to(String[] emails, String[] names) throws MessagingException {
-        return addRecipients(Message.RecipientType.TO, toAddresses(emails, names));
-    }
-
-    public MailSender cc(String email) throws MessagingException {
-        return cc(new String[]{email}, null);
-    }
-
-    public MailSender cc(String email, String name) throws MessagingException {
-        return cc(new String[]{email}, new String[]{name});
-    }
-
-    public MailSender cc(String[] emails) throws MessagingException {
-        return cc(emails, null);
-    }
-
-    public MailSender cc(String[] emails, String[] names) throws MessagingException {
-        return addRecipients(Message.RecipientType.CC, toAddresses(emails, names));
-    }
-
-    public MailSender bcc(String email) throws MessagingException {
-        return bcc(new String[]{email}, null);
-    }
-
-    public MailSender bcc(String email, String name) throws MessagingException {
-        return bcc(new String[]{email}, new String[]{name});
-    }
-
-    public MailSender bcc(String[] emails) throws MessagingException {
-        return bcc(emails, null);
-    }
-
-    public MailSender bcc(String[] emails, String[] names) throws MessagingException {
-        return addRecipients(Message.RecipientType.BCC, toAddresses(emails, names));
-
-    }
-
-    private Address[] toAddresses(String[] emails, String[] names) throws AddressException {
-        int eLen = emails.length;
-        Address[] addresses = new Address[eLen];
-        if (names != null && names.length == eLen) {//email 和 name 能对上时
-            try {
-                for (int i = 0; i < eLen; i++) {
-                    addresses[i] = new InternetAddress(emails[i], names[i], default_charset);
-                }
-                return addresses;
-            } catch (UnsupportedEncodingException ignore) {
-            }
-        }
-        for (int i = 0; i < eLen; i++) {//对不上 或 异常
-            addresses[i] = new InternetAddress(emails[i]);
-        }
-        return addresses;
-    }
-
-    private MailSender addRecipients(Message.RecipientType type, Address[] addresses) throws MessagingException {
-        msg.addRecipients(type, addresses);
-        return this;
-    }
-    //endregion  //recipients
-
-    public MailSender subject(String subject) throws MessagingException {
-        msg.setSubject(subject);
-        return this;
-    }
-
-    //region //content
-    public MailSender html(String html) throws MessagingException {
-        return content(html, true);
-    }
-
-    public MailSender text(String plain) throws MessagingException {
-        return content(plain, false);
-    }
-
-    /**
-     * 设置邮件内容.
-     * <p>
-     * 也可以使用 <code>html()</code> 或 <code>text()</code> 设置, 但只能设置一次内容, 否则将抛出异常.
-     *
-     * @throws IllegalStateException 当多次设置邮件内容时抛出.
-     */
-    public MailSender content(String content, boolean isHtml) throws MessagingException {
-        if (contentHasSet) {
-            throw new IllegalStateException("Content already set.");
-        }
-        contentHasSet = true;
-        if (isHtml) {
-            body.setContent(content, "text/html;charset=" + default_charset);
-        } else {
-            body.setContent(content, "text/plain;charset=" + default_charset);
-        }
-        return this;
-    }
-    //endregion //content
-
-    //region //attachment
-
-    /**
-     * 带附件.
-     * <p>
-     * 在「附件」中显示.
-     */
-    public MailSender attachment(String pathToFile) throws MessagingException {
-        return attachment(pathToFile, null);
-    }
-
-    /**
-     * 带附件.
-     * <p>
-     * 没有设置 cid 则只在附件中显示，设置了 cid 则 对应 html 邮件内容. 如：&lt;img src="cid:img1"/>
-     * Outlook - cid 只支持图片, 文件的 cid 在 a 标签 href 属性中不起作用，只在附件中显示
-     * QQ      - cid 支持二进制文件，有 cid 的附件将不会在「附件」中显示
-     */
-    public MailSender attachment(String pathToFile, String cid) throws MessagingException {
-        return attachment(new File(pathToFile), cid);
-    }
-
-    public MailSender attachment(File file) throws MessagingException {
-        return attachment(file, null);
-    }
-
-    public MailSender attachment(File file, String cid) throws MessagingException {
-        BodyPart attach = new MimeBodyPart();
-        attach.setDataHandler(new DataHandler(new FileDataSource(file)));
-        try {
-            attach.setFileName(MimeUtility.encodeWord(file.getName(), default_charset, null));
-        } catch (UnsupportedEncodingException ignore) {
-        }
-        if (cid != null) {
-            attach.setHeader("Content-ID", cid);
-        }
-        attachments.add(attach);
-        return this;
-    }
-    //endregion //attachment
-
-    //region //dkim
-    public MailSender dkim(File privateDERKey, String domain, String selector) {
-        try {
-            signer = new DkimSigner(domain, selector, privateDERKey);
-        } catch (Exception e) {
-            signer = null;
-            e.printStackTrace();
-        }
-        return this;
-    }
-
-    public MailSender dkim(byte[] privateDERKey, String domain, String selector) {
-        return dkim(new ByteArrayInputStream(privateDERKey), domain, selector);
-    }
-
-    public MailSender dkim(InputStream privateDERKey, String domain, String selector) {
-        try {
-            signer = new DkimSigner(domain, selector, privateDERKey);
-        } catch (Exception e) {
-            signer = null;
-            e.printStackTrace();
-        }
-        return this;
-    }
-
-    public MailSender dkim(RSAPrivateKey privateKey, String domain, String selector) {
-        signer = new DkimSigner(domain, selector, privateKey);
-        return this;
-    }
-    //endregion
-
-    public Message toMessage() throws MessagingException {
-        content.removeBodyPart(body);//防止多次调用添加多次
-        content.addBodyPart(body);//顺序：body 在 attachment 之前
-        for (BodyPart attach : attachments) {
-            content.removeBodyPart(attach);
-            content.addBodyPart(attach);
-        }
-        msg.setContent(content);
-        if (signer != null) {
-            return new DkimMessage(msg, signer);
-        }
-        return msg;
-    }
-
-    public void send() throws MessagingException {
-        Transport.send(toMessage(), msg.getAllRecipients());
     }
 }
