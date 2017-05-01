@@ -117,6 +117,7 @@ public class MailSender {
         return this;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MailSender from(String email) throws MessagingException {
         msg.setFrom(new InternetAddress(email));
         return this;
@@ -209,6 +210,7 @@ public class MailSender {
         }
         return addresses;
     }
+    //endregion  //recipients
 
     private MailSender addRecipients(Message.RecipientType type, Address[] addresses) throws MessagingException {
         msg.addRecipients(type, addresses);
@@ -219,7 +221,6 @@ public class MailSender {
         msg.setSubject(subject);
         return this;
     }
-    //endregion  //recipients
 
     //region //content
     public MailSender html(String html) throws MessagingException {
@@ -249,6 +250,9 @@ public class MailSender {
         }
         return this;
     }
+    //endregion //content
+
+    //region //attachment
 
     /**
      * 带附件.
@@ -258,9 +262,6 @@ public class MailSender {
     public MailSender attachment(String pathToFile) throws MessagingException {
         return attachment(pathToFile, null);
     }
-    //endregion //content
-
-    //region //attachment
 
     /**
      * 带附件.
@@ -293,6 +294,7 @@ public class MailSender {
         attachments.add(attach);
         return this;
     }
+    //endregion attachment
 
     //region //dkim
     public MailSender dkim(File privateDERKey, String domain, String selector) {
@@ -304,7 +306,6 @@ public class MailSender {
         }
         return this;
     }
-    //endregion //attachment
 
     public MailSender dkim(byte[] privateDERKey, String domain, String selector) {
         return dkim(new ByteArrayInputStream(privateDERKey), domain, selector);
@@ -324,6 +325,7 @@ public class MailSender {
         signer = new DkimSigner(domain, selector, privateKey);
         return this;
     }
+    //endregion dkim
 
     public Message toMessage() throws MessagingException {
         content.removeBodyPart(body);//防止多次调用添加多次
@@ -338,7 +340,6 @@ public class MailSender {
         }
         return msg;
     }
-    //endregion
 
     public void send() throws MessagingException {
         Transport.send(toMessage(), msg.getAllRecipients());

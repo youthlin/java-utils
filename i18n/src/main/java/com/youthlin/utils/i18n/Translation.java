@@ -32,7 +32,7 @@ import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
  *
  * @see <a href="http://youthlin.com/?p=1315">http://youthlin.com/20161315.html</a>
  */
-@SuppressWarnings({"SameParameterValue", "WeakerAccess", "unused"})
+@SuppressWarnings({"SameParameterValue", "WeakerAccess", "unused", "UnusedReturnValue"})
 public class Translation {
     public static final ResourceBundle empty = new ResourceBundle() {
         @Override
@@ -390,7 +390,7 @@ public class Translation {
         print();
     }
 
-    public static void print() {
+    private static void print() {
         System.out.println(__("Hello, World!"));
         System.out.println(__("Hello, {0}!", 0, "Lin"));
         System.out.println(__("Hello, {0}! Now is {1,date} {1,time}", 0, "World", new Date()));
