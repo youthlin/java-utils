@@ -9,12 +9,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>mail</artifactId>
+    <artifactId>i18n</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>net.markenwerk</groupId>
-            <artifactId>utils-mail-dkim</artifactId>
+            <groupId>org.gnu.gettext</groupId>
+            <artifactId>libintl</artifactId>
         </dependency>
     </dependencies>
 

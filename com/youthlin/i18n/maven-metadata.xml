@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
   <groupId>com.youthlin</groupId>
-  <artifactId>mail</artifactId>
+  <artifactId>i18n</artifactId>
   <versioning>
     <versions>
       <version>1.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20170501035709</lastUpdated>
+    <lastUpdated>20170501035805</lastUpdated>
   </versioning>
 </metadata>
