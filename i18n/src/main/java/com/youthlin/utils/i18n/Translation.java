@@ -29,6 +29,8 @@ import java.util.Set;
  * <br><code>addResource("id", ResourceBundle.getBundle("Message"));</code>
  * <p>
  * 也可使用 Poedit 工具抽取待翻译字符串【复数编辑nplurals=2; plural=n == 1 ? 0 : 1;】
+ * <p>
+ * 使用 {@code getBundle} 方法获取资源。
  *
  * @author YouthLin Chen
  * @see <a href="http://youthlin.com/?p=1315">http://youthlin.com/20161315.html</a>
@@ -369,6 +371,7 @@ public class Translation {
     }
     //endregion
 
+    //region //getter and setter
     public static ResourceBundle getDft() {
         return dft;
     }
@@ -385,6 +388,7 @@ public class Translation {
     public static void setVerbose(boolean verbose) {
         Translation.verbose = verbose;
     }
+    //endregion
 
     public static ResourceBundle getBundle(String baseName) {
         return getBundle(baseName, Locale.getDefault());
