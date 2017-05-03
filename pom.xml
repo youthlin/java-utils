@@ -7,6 +7,11 @@
     <artifactId>utils</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0</version>
+
+    <!-- mvn versions:set -DnewVersion=xxx -->
+    <!-- mvn versions:update-child-modules -->
+    <!-- http://www.cnblogs.com/ilovexiao/p/5663761.html -->
+
     <modules>
         <module>mail</module>
         <module>i18n</module>
