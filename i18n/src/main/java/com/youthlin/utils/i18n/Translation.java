@@ -1,16 +1,25 @@
 package com.youthlin.utils.i18n;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Set;
 
-import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
 
 /**
  * 翻译工具类.
  * <p>
- * Created by lin on 2017-01-30-030.
- * <p>
  * <code>__("str");</code><br>
+ * <code>_f("fmt",args...);</code><br>
+ * <code>__("msg","domain",args...);</code><br>
+ * <code>__("msg",resources,args...);</code><br>
  * <code>_x("str","context");</code><br>
  * <code>_n("single","plural",n);</code><br>
  * <code>_nx("single","plural",n,"context");</code><br>
@@ -21,11 +30,12 @@ import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
  * <p>
  * 也可使用 Poedit 工具抽取待翻译字符串【复数编辑nplurals=2; plural=n == 1 ? 0 : 1;】
  *
+ * @author YouthLin Chen
  * @see <a href="http://youthlin.com/?p=1315">http://youthlin.com/20161315.html</a>
  */
-@SuppressWarnings({"SameParameterValue", "WeakerAccess", "unused", "UnusedReturnValue"})
+@SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue", "SameParameterValue"})
 public class Translation {
-    public static final ResourceBundle empty = new ResourceBundle() {
+    public static final ResourceBundle EMPTY_RESOURCE_BUNDLE = new ResourceBundle() {
         @Override
         protected Object handleGetObject(String key) {
             return null;
@@ -46,9 +56,10 @@ public class Translation {
             };
         }
     };
-    public static final String domain = Translation.class.getName();
+    public static final String DEFAULT_DOMAIN = Translation.class.getName();
 
-    private static ResourceBundle dft = empty;
+    private static ResourceBundle dft = EMPTY_RESOURCE_BUNDLE;
+    // 双向队列，添加移除操作多，几乎没有随机访问，因此用 LinkedList
     private static Deque<Pair> resources = new LinkedList<Pair>();
     private static Set<String> domains = new HashSet<String>();
     private static Set<ResourceBundle> catalogs = new HashSet<ResourceBundle>();
@@ -57,7 +68,7 @@ public class Translation {
     private static ResourceBundle r = getBundle("Message");
 
     static {
-        addResource(domain, r);
+        addResource(DEFAULT_DOMAIN, r);
     }
 
     //region // add/remove
@@ -74,8 +85,8 @@ public class Translation {
     public static boolean addResource(String domain, ResourceBundle rb) {
         notnull(domain, "domain");
         notnull(rb, "ResourceBundle");
-        if (rb.equals(dft) || rb.equals(empty)) {
-            if (verbose) System.err.println("dft/empty is no need to add.");
+        if (rb.equals(dft) || rb.equals(EMPTY_RESOURCE_BUNDLE)) {
+            if (verbose) System.err.println("dft/EMPTY_RESOURCE_BUNDLE is no need to add.");
             return false;//dft 就没有必要添加了
         }
         Pair pair = new Pair(domain, rb);
@@ -88,12 +99,20 @@ public class Translation {
         return true;
     }
 
+    /**
+     * 移除指定 domain 的资源包
+     *
+     * @param domain 命名
+     * @param rb     资源包
+     * @return true if removed
+     */
     public static boolean removeResource(String domain, ResourceBundle rb) {
         Pair p = new Pair(domain, rb);
         boolean hasName = false;
         boolean hasCatalog = false;
         if (resources.contains(p)) {
             resources.remove(p);
+            //移除后看是否还有
             for (Pair pair : resources) {
                 if (pair.name.equals(domain)) {
                     hasName = true;
@@ -102,6 +121,7 @@ public class Translation {
                     hasCatalog = true;
                 }
             }
+            //移除后没有这个 domain 了，那就可以真正把 domain 从 domains 中去掉
             if (!hasName) {
                 domains.remove(domain);
             }
@@ -113,6 +133,12 @@ public class Translation {
         return false;
     }
 
+    /**
+     * 移除 domain 下的所有资源包
+     *
+     * @param domain 命名
+     * @return true if removed
+     */
     public static boolean removeResource(String domain) {
         if (domains.contains(domain)) {
             Iterator<Pair> iterator = resources.iterator();
@@ -129,6 +155,12 @@ public class Translation {
         return false;
     }
 
+    /**
+     * 移除指定的资源包，不管命名为什么 domain
+     *
+     * @param rb 资源包
+     * @return true if removed
+     */
     public static boolean removeResource(ResourceBundle rb) {
         if (catalogs.contains(rb)) {
             Iterator<Pair> iterator = resources.iterator();
@@ -147,6 +179,13 @@ public class Translation {
     //endregion // add/remove
 
     //region // __
+
+    /**
+     * translate msg to target language.
+     *
+     * @param msg text to be translated
+     * @return translated text
+     */
     public static String __(String msg) {
         for (Pair p : resources) {
             String s = GettextResource2.gettextnull(p.catalog, msg);
@@ -157,43 +196,61 @@ public class Translation {
         return GettextResource2.gettext(dft, msg);
     }
 
-    public static String __(String msg, String domain) {
+    /**
+     * translate msg to target language with Specific format.
+     *
+     * @param fmt    text(with format)  to be translated
+     * @param params params
+     * @return translated text
+     * @see MessageFormat
+     */
+    public static String _f(String fmt, Object... params) {
+        return format(__(fmt), params);
+    }
+
+    /**
+     * translate msg to target language.
+     *
+     * @param msg    text to be translated
+     * @param domain DEFAULT_DOMAIN name
+     * @param params params
+     * @return translated text
+     * @see #addResource(String, ResourceBundle)
+     */
+    public static String __(String msg, String domain, Object... params) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.gettextnull(p.catalog, msg);
                 if (s != null) {
-                    return s;
+                    return format(s, params);
                 }
             }
         }
-        return GettextResource2.gettext(dft, msg);
+        return format(GettextResource2.gettext(dft, msg), params);
     }
 
-    public static String __(String msg, ResourceBundle rb) {
+    /**
+     * translate msg to target language.
+     *
+     * @param msg    text to be translated
+     * @param rb     ResourceBundle
+     * @param params params
+     * @return translated text
+     * @see #addResource(String, ResourceBundle)
+     */
+    public static String __(String msg, ResourceBundle rb, Object... params) {
         String s = GettextResource2.gettextnull(rb, msg);
         if (s != null) {
-            return s;
+            return format(s, params);
         }
-        return GettextResource2.gettext(rb, msg);
-    }
-
-    public static String __(String fmt, int unused, Object... params) {
-        return MessageFormat.format(__(fmt), params);
-    }
-
-    public static String __(String fmt, String domain, Object... params) {
-        return MessageFormat.format(__(fmt, domain), params);
-    }
-
-    public static String __(String fmt, ResourceBundle rb, Object... params) {
-        return MessageFormat.format(__(fmt, rb), params);
+        return format(GettextResource2.gettext(rb, msg), params);
     }
     //endregion // __
 
     //region // _x
     public static String _x(String msg, String ctx) {
         for (Pair p : resources) {
-            String s = GettextResource2.gettextnull(p.catalog, ctx + CONTEXT_GLUE + msg);
+            String s = GettextResource2.gettextnull(p.catalog, withContext(ctx, msg));
             if (s != null) {
                 return s;
             }
@@ -201,132 +258,116 @@ public class Translation {
         return GettextResource2.pgettext(dft, ctx, msg);
     }
 
-    public static String _x(String msg, String ctx, String domain) {
+    public static String _fx(String fmt, String ctx, Object... params) {
+        return format(_x(fmt, ctx), params);
+    }
+
+    public static String _x(String msg, String ctx, String domain, Object... params) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
-                String s = GettextResource2.gettextnull(p.catalog, ctx + CONTEXT_GLUE + msg);
+                String s = GettextResource2.gettextnull(p.catalog, withContext(ctx, msg));
                 if (s != null) {
-                    return s;
+                    return format(s, params);
                 }
             }
         }
-        return GettextResource2.pgettext(dft, ctx, msg);
+        return format(GettextResource2.pgettext(dft, ctx, msg), params);
     }
 
-    public static String _x(String msg, String ctx, ResourceBundle rb) {
-        String s = GettextResource2.gettextnull(rb, ctx + CONTEXT_GLUE + msg);
+    public static String _x(String msg, String ctx, ResourceBundle rb, Object... params) {
+        String s = GettextResource2.gettextnull(rb, withContext(ctx, msg));
         if (s != null) {
-            return s;
+            return format(s, params);
         }
-        return GettextResource2.pgettext(rb, ctx, msg);
-    }
-
-    public static String _x(String fmt, String ctx, int unused, Object... param) {
-        return MessageFormat.format(_x(fmt, ctx), param);
-    }
-
-    public static String _x(String fmt, String ctx, String domain, Object... param) {
-        return MessageFormat.format(_x(fmt, ctx, domain), param);
-    }
-
-    public static String _x(String fmt, String ctx, ResourceBundle rb, Object... param) {
-        return MessageFormat.format(_x(fmt, ctx, rb), param);
+        return format(GettextResource2.pgettext(rb, ctx, msg), params);
     }
     //endregion // _x
 
     //region // _n
-    public static String _n(String msg, String msg_plural, long n) {
+    public static String _n(String msg, String msg_plural, long n, Object... params) {
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, msg, n);
             if (s != null) {
-                return s;
+                return format(s, params);
             }
         }
-        return GettextResource2.ngettext(dft, msg, msg_plural, n);
+        return format(GettextResource2.ngettext(dft, msg, msg_plural, n), params);
     }
 
-    public static String _n(String msg, String msg_plural, String domain, long n) {
+    public static String _n(String msg, String msg_plural, String domain, long n, Object... params) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.ngettextnull(p.catalog, msg, n);
                 if (s != null) {
-                    return s;
+                    return format(s, params);
                 }
             }
         }
         return GettextResource2.ngettext(dft, msg, msg_plural, n);
     }
 
-    public static String _n(String msg, String msg_plural, ResourceBundle rb, long n) {
+    public static String _n(String msg, String msg_plural, ResourceBundle rb, long n, Object... params) {
         String s = GettextResource2.ngettextnull(rb, msg, n);
         if (s != null) {
-            return s;
+            return format(s, params);
         }
-        return GettextResource2.ngettext(dft, msg, msg_plural, n);
+        return format(GettextResource2.ngettext(dft, msg, msg_plural, n), params);
     }
 
-    public static String _n(String msg, String msg_plural, long n, Object... param) {
-        return MessageFormat.format(_n(msg, msg_plural, n), param);
-    }
-
-    public static String _n(String msg, String msg_plural, String domain, long n, Object... param) {
-        return MessageFormat.format(_n(msg, msg_plural, domain, n), param);
-    }
-
-    public static String _n(String msg, String msg_plural, ResourceBundle rb, long n, Object... param) {
-        return MessageFormat.format(_n(msg, msg_plural, n, rb), param);
-    }
     //endregion // _n
 
     //region // _nx
-    public static String _nx(String msg, String plural, String ctx, long n) {
+    public static String _nx(String msg, String plural, String ctx, long n, Object... params) {
         for (Pair p : resources) {
-            String s = GettextResource2.ngettextnull(p.catalog, ctx + CONTEXT_GLUE + msg, n);
+            String s = GettextResource2.ngettextnull(p.catalog, withContext(ctx, msg), n);
             if (s != null) {
-                return s;
+                return format(s, params);
             }
         }
-        return GettextResource2.npgettext(dft, ctx, msg, plural, n);
+        return format(GettextResource2.npgettext(dft, ctx, msg, plural, n), params);
     }
 
-    public static String _nx(String msg, String plural, String ctx, String domain, long n) {
+    public static String _nx(String msg, String plural, String ctx,
+                             String domain, long n, Object... params) {
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
-                String s = GettextResource2.ngettextnull(p.catalog, ctx + CONTEXT_GLUE + msg, n);
+                String s = GettextResource2.ngettextnull(p.catalog, withContext(ctx, msg), n);
                 if (s != null) {
-                    return s;
+                    return format(s, params);
                 }
             }
         }
-        return GettextResource2.npgettext(dft, ctx, msg, plural, n);
+        return format(GettextResource2.npgettext(dft, ctx, msg, plural, n), params);
     }
 
-    public static String _nx(String msg, String plural, String ctx, ResourceBundle catalog, long n) {
-        String s = GettextResource2.ngettextnull(catalog, ctx + CONTEXT_GLUE + msg, n);
+    public static String _nx(String msg, String plural, String ctx,
+                             ResourceBundle catalog, long n, Object... params) {
+        String s = GettextResource2.ngettextnull(catalog, withContext(ctx, msg), n);
         if (s != null) {
-            return s;
+            return format(s, params);
         }
-        return GettextResource2.npgettext(catalog, ctx, msg, plural, n);
-    }
-
-    public static String _nx(String msg, String plural, String ctx, long n, Object... param) {
-        return MessageFormat.format(_nx(msg, plural, ctx, n), param);
-    }
-
-    public static String _nx(String msg, String plural, String ctx, String domain, long n, Object... param) {
-        return MessageFormat.format(_nx(msg, plural, ctx, domain, n), param);
-    }
-
-    public static String _nx(String msg, String plural, String ctx, ResourceBundle catalog, long n, Object... param) {
-        return MessageFormat.format(_nx(msg, plural, ctx, catalog, n), param);
+        return format(GettextResource2.npgettext(catalog, ctx, msg, plural, n), params);
     }
     //endregion  // _nx
+
+    //region //util method
+    private static String format(String fmt, Object... param) {
+        if (param == null || param.length == 0) {
+            return fmt;
+        }
+        return MessageFormat.format(fmt, param);
+    }
+
+    private static String withContext(String ctx, String msg) {
+        return ctx + GettextResource2.CONTEXT_GLUE + msg;
+    }
 
     private static void notnull(Object o, String parameterName) {
         if (o == null) {
             throw new NullPointerException("The parameter: '" + parameterName + "' should be not null");
         }
     }
+    //endregion
 
     public static ResourceBundle getDft() {
         return dft;
@@ -368,27 +409,27 @@ public class Translation {
     }
 
     public static void main(String[] args) {
-        System.out.println(domain);
+        System.out.println(DEFAULT_DOMAIN);
         System.out.println("默认：------------------------");
         print();
-        removeResource(domain);
+        removeResource(DEFAULT_DOMAIN);
         System.out.println("移除后：------------------------");
         print();
         r = getBundle("Message", Locale.FRENCH);
-        addResource(domain, r);
+        addResource(DEFAULT_DOMAIN, r);
         System.out.println("Fr：------------------------");
         print();
-        removeResource(domain, r);
+        removeResource(DEFAULT_DOMAIN, r);
         r = getBundle("Message");
-        addResource(domain, r);
+        addResource(DEFAULT_DOMAIN, r);
         System.out.println("默认：------------------------");
         print();
     }
 
     private static void print() {
         System.out.println(__("Hello, World!"));
-        System.out.println(__("Hello, {0}!", 0, "Lin"));
-        System.out.println(__("Hello, {0}! Now is {1,date} {1,time}", 0, "World", new Date()));
+        System.out.println(_f("Hello, {0}!", "Lin"));
+        System.out.println(_f("Hello, {0}! Now is {1,date} {1,time}", "World", new Date()));
         System.out.println(_x("Post", "a post"));
         System.out.println(_x("Post", "to post"));
         System.out.println(_n("One Comment", "{0} Comments", 1, 1));
@@ -397,9 +438,8 @@ public class Translation {
         System.out.println(_nx("One Comment", "{0} Comments", "注释", 2, 2));
         //removeResource(r);
         System.out.println(_nx("One Comment", "{0} Comments", "注释", 2, 2));
-        System.out.println(_nx("One Comment", "{0} Comments", "注释", domain, 2, 2));
+        System.out.println(_nx("One Comment", "{0} Comments", "注释", DEFAULT_DOMAIN, 2, 2));
         System.out.println(_nx("One Comment", "{0} Comments", "注释", r, 2, 2));
-
     }
 
     /*私有内部类. 用于添加至 Queue 检查重复.*/

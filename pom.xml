@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.youthlin</groupId>
     <artifactId>utils</artifactId>
     <packaging>pom</packaging>
@@ -12,35 +11,11 @@
         <module>mail</module>
         <module>i18n</module>
     </modules>
-
     <properties>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>https://github.com/YouthLin/java-utils.git</url>
-        <connection>git@github.com:YouthLin/java-utils.git</connection>
-        <developerConnection>https://youthlin.com</developerConnection>
-    </scm>
-
-    <developers>
-        <developer>
-            <name>YouthLin Chen</name>
-            <email>yulinlin1995@gmail.com</email>
-            <url>https://youthlin.com</url>
-        </developer>
-    </developers>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -75,6 +50,25 @@
         </plugins>
     </build>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/YouthLin/java-utils.git</url>
+        <connection>git@github.com:YouthLin/java-utils.git</connection>
+        <developerConnection>https://youthlin.com</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>YouthLin Chen</name>
+            <email>yulinlin1995@gmail.com</email>
+            <url>https://youthlin.com</url>
+        </developer>
+    </developers>
     <profiles>
         <profile>
             <id>release</id>
