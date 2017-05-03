@@ -189,6 +189,7 @@ public class Translation {
      * @return translated text
      */
     public static String __(String msg) {
+        notnull(msg, "msg");
         for (Pair p : resources) {
             String s = GettextResource2.gettextnull(p.catalog, msg);
             if (s != null) {
@@ -207,6 +208,7 @@ public class Translation {
      * @see MessageFormat
      */
     public static String _f(String fmt, Object... params) {
+        notnull(fmt, "fmt");
         return format(__(fmt), params);
     }
 
@@ -220,6 +222,8 @@ public class Translation {
      * @see #addResource(String, ResourceBundle)
      */
     public static String __(String msg, String domain, Object... params) {
+        notnull(msg, "msg");
+        notnull(domain, "domain");
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.gettextnull(p.catalog, msg);
@@ -241,6 +245,8 @@ public class Translation {
      * @see #addResource(String, ResourceBundle)
      */
     public static String __(String msg, ResourceBundle rb, Object... params) {
+        notnull(msg, "msg");
+        notnull(rb, "ResourceBundle");
         String s = GettextResource2.gettextnull(rb, msg);
         if (s != null) {
             return format(s, params);
@@ -251,6 +257,8 @@ public class Translation {
 
     //region // _x
     public static String _x(String msg, String ctx) {
+        notnull(msg, "msg");
+        notnull(ctx, "context");
         for (Pair p : resources) {
             String s = GettextResource2.gettextnull(p.catalog, withContext(ctx, msg));
             if (s != null) {
@@ -261,10 +269,15 @@ public class Translation {
     }
 
     public static String _fx(String fmt, String ctx, Object... params) {
+        notnull(fmt, "fmt");
+        notnull(ctx, "context");
         return format(_x(fmt, ctx), params);
     }
 
     public static String _x(String msg, String ctx, String domain, Object... params) {
+        notnull(msg, "msg");
+        notnull(ctx, "context");
+        notnull(domain, "domain");
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.gettextnull(p.catalog, withContext(ctx, msg));
@@ -277,6 +290,9 @@ public class Translation {
     }
 
     public static String _x(String msg, String ctx, ResourceBundle rb, Object... params) {
+        notnull(msg, "msg");
+        notnull(ctx, "context");
+        notnull(rb, "ResourceBundle");
         String s = GettextResource2.gettextnull(rb, withContext(ctx, msg));
         if (s != null) {
             return format(s, params);
@@ -287,6 +303,8 @@ public class Translation {
 
     //region // _n
     public static String _n(String msg, String msg_plural, long n, Object... params) {
+        notnull(msg, "msg");
+        notnull(msg_plural, "msg_plural");
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, msg, n);
             if (s != null) {
@@ -297,6 +315,9 @@ public class Translation {
     }
 
     public static String _n(String msg, String msg_plural, String domain, long n, Object... params) {
+        notnull(msg, "msg");
+        notnull(msg_plural, "msg_plural");
+        notnull(domain, "domain");
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.ngettextnull(p.catalog, msg, n);
@@ -309,6 +330,9 @@ public class Translation {
     }
 
     public static String _n(String msg, String msg_plural, ResourceBundle rb, long n, Object... params) {
+        notnull(msg, "msg");
+        notnull(msg_plural, "msg_plural");
+        notnull(rb, "ResourceBundle");
         String s = GettextResource2.ngettextnull(rb, msg, n);
         if (s != null) {
             return format(s, params);
@@ -320,6 +344,9 @@ public class Translation {
 
     //region // _nx
     public static String _nx(String msg, String plural, String ctx, long n, Object... params) {
+        notnull(msg, "msg");
+        notnull(plural, "plural");
+        notnull(ctx, "context");
         for (Pair p : resources) {
             String s = GettextResource2.ngettextnull(p.catalog, withContext(ctx, msg), n);
             if (s != null) {
@@ -331,6 +358,10 @@ public class Translation {
 
     public static String _nx(String msg, String plural, String ctx,
                              String domain, long n, Object... params) {
+        notnull(msg, "msg");
+        notnull(plural, "plural");
+        notnull(ctx, "context");
+        notnull(domain, "domain");
         for (Pair p : resources) {
             if (p.name.equals(domain)) {
                 String s = GettextResource2.ngettextnull(p.catalog, withContext(ctx, msg), n);
@@ -344,6 +375,10 @@ public class Translation {
 
     public static String _nx(String msg, String plural, String ctx,
                              ResourceBundle catalog, long n, Object... params) {
+        notnull(msg, "msg");
+        notnull(plural, "plural");
+        notnull(ctx, "context");
+        notnull(catalog, "ResourceBundle");
         String s = GettextResource2.ngettextnull(catalog, withContext(ctx, msg), n);
         if (s != null) {
             return format(s, params);
@@ -395,6 +430,8 @@ public class Translation {
     }
 
     public static ResourceBundle getBundle(String baseName, Locale locale) {
+        notnull(baseName, "baseName");
+        notnull(locale, "locale");
         /*
          * ResourceBundle.getBundle(baseName, locale) 加载顺序：
          * baseName.locale.class -> baseName.dftLocale.class -> baseName.class
@@ -444,6 +481,7 @@ public class Translation {
         System.out.println(_nx("One Comment", "{0} Comments", "注释", 2, 2));
         System.out.println(_nx("One Comment", "{0} Comments", "注释", DEFAULT_DOMAIN, 2, 2));
         System.out.println(_nx("One Comment", "{0} Comments", "注释", r, 2, 2));
+        System.out.println(__("xxx"));
     }
 
     /*私有内部类. 用于添加至 Queue 检查重复.*/
