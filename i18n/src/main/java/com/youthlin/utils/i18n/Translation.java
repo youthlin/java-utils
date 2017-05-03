@@ -1,16 +1,7 @@
 package com.youthlin.utils.i18n;
 
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.Deque;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 
 import static com.youthlin.utils.i18n.GettextResource2.CONTEXT_GLUE;
 
@@ -75,6 +66,10 @@ public class Translation {
      * 注册一个翻译包.
      * <p>
      * 添加一个翻译资源包到队列头部, 翻译时将从队列头部搜索
+     *
+     * @param domain 命名
+     * @param rb     资源包
+     * @return true if added
      */
     public static boolean addResource(String domain, ResourceBundle rb) {
         notnull(domain, "domain");

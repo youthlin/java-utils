@@ -5,20 +5,8 @@ import net.markenwerk.utils.mail.dkim.DkimSigner;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
-import javax.mail.Address;
-import javax.mail.Authenticator;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimeUtility;
+import javax.mail.*;
+import javax.mail.internet.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -95,6 +83,8 @@ public class MailSender {
     /**
      * 从 Session 构造 Message.
      *
+     * @param session 邮件会话
+     * @return MailSender 实例
      * @throws IllegalStateException 当已经调用过本方法再次调用时抛出
      */
     public static MailSender newInstance(Session session) {
@@ -236,7 +226,11 @@ public class MailSender {
      * <p>
      * 也可以使用 <code>html()</code> 或 <code>text()</code> 设置, 但只能设置一次内容, 否则将抛出异常.
      *
+     * @param content 内容
+     * @param isHtml  是否是 HTML 内容
+     * @return this
      * @throws IllegalStateException 当多次设置邮件内容时抛出.
+     * @throws MessagingException    异常
      */
     public MailSender content(String content, boolean isHtml) throws MessagingException {
         if (contentHasSet) {
@@ -258,6 +252,9 @@ public class MailSender {
      * 带附件.
      * <p>
      * 在「附件」中显示.
+     *
+     * @param pathToFile 附件的路径
+     * @return this
      */
     public MailSender attachment(String pathToFile) throws MessagingException {
         return attachment(pathToFile, null);
@@ -266,9 +263,14 @@ public class MailSender {
     /**
      * 带附件.
      * <p>
-     * 没有设置 cid 则只在附件中显示，设置了 cid 则 对应 html 邮件内容. 如：&lt;img src="cid:img1"/>
+     * 没有设置 cid 则只在附件中显示，设置了 cid 则 对应 html 邮件内容. 如：&lt;img src="cid:img1"/&gt;
      * Outlook - cid 只支持图片, 文件的 cid 在 a 标签 href 属性中不起作用，只在附件中显示
      * QQ      - cid 支持二进制文件，有 cid 的附件将不会在「附件」中显示
+     *
+     * @param pathToFile 附件路径
+     * @param cid        给附件起个别名
+     * @return this
+     * @throws MessagingException 异常
      */
     public MailSender attachment(String pathToFile, String cid) throws MessagingException {
         return attachment(new File(pathToFile), cid);
@@ -372,6 +374,10 @@ public class MailSender {
 
         /**
          * 如果需要授权才能登录的服务器, 那么请提供账号和密码.
+         *
+         * @param username 用户名
+         * @param password 密码
+         * @return this
          */
         public SessionBuilder auth(final String username, final String password) {
             props.put("mail.smtp.auth", true);
@@ -386,6 +392,9 @@ public class MailSender {
 
         /**
          * 端口号，默认25
+         *
+         * @param port port
+         * @return this
          */
         public SessionBuilder port(int port) {
             props.put("mail.smtp.port", port);
@@ -397,6 +406,8 @@ public class MailSender {
          * <p>
          * JDK8 不能使用 SSL, 需要替换 <code>JDK_HOME/jre/lib/security/</code> 下的两个 jar 包, 下载地址见下
          *
+         * @param port port
+         * @return this
          * @see <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html">http://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html</a>
          */
         public SessionBuilder ssl(int port) {
@@ -407,6 +418,9 @@ public class MailSender {
 
         /**
          * 是否开启 Debug 输出, 默认否.
+         *
+         * @param debug default false
+         * @return this
          */
         public SessionBuilder debug(boolean debug) {
             props.put("mail.debug", Boolean.toString(debug));//必须要是 String 类型
