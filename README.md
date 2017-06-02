@@ -1,5 +1,5 @@
 # Java Utils
-
+[![Build Status](https://travis-ci.org/YouthLin/java-utils.svg?branch=master)](https://travis-ci.org/YouthLin/java-utils)
 1. SMTP Mail Sender
 
    ```
