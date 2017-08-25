@@ -123,12 +123,13 @@
                 </plugins>
             </build>
             <distributionManagement>
+                <!-- id 对应 settings.xml 中 server 的 id -->
                 <snapshotRepository>
-                    <id>snapshots</id>
+                    <id>oss-snapshots</id>
                     <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
                 </snapshotRepository>
                 <repository>
-                    <id>releases</id>
+                    <id>oss-releases</id>
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
