@@ -77,17 +77,18 @@ import java.util.Properties;
  * .SCR、.SCT、.SHB、.SYS、.VB、.VBE、.VBS、.VXD、.WSC、.WSF、.WSH</pre>
  * 详见<a href="https://support.google.com/mail/answer/6590">某些文件类型被阻止 - Gmail 帮助</a>
  */
-@SuppressWarnings({"WeakerAccess", "SameParameterValue", "unused"})
+@SuppressWarnings({"WeakerAccess", "SameParameterValue", "unused", "UnusedReturnValue"})
 public class MailSender {
     //region //field
-    private static final String default_charset = "UTF-8";//默认字符编码
+    private static final String UTF_8 = "UTF-8";//默认字符编码
     private final MimeMultipart content = new MimeMultipart();//邮件的所有内容(body+Attachment)
     private final BodyPart body = new MimeBodyPart();//body
     private final List<BodyPart> attachments = new ArrayList<BodyPart>();//attachments
-    private String charset = default_charset;
+    private String charset = UTF_8;
     private boolean contentHasSet = false;//是否已经设置过内容
     private MimeMessage msg;//每次设置的 Message 主体
     private DkimSigner signer;//DKIM 邮件认证
+    //endregion //field
 
     private MailSender() {
     }
@@ -97,12 +98,10 @@ public class MailSender {
      *
      * @param session 邮件会话
      * @return MailSender 实例
-     * @throws IllegalStateException 当已经调用过本方法再次调用时抛出
      */
     public static MailSender newInstance(Session session) {
-        return newInstance(session, default_charset);
+        return newInstance(session, UTF_8);
     }
-    //endregion //field
 
     public static MailSender newInstance(Session session, String charset) {
         Charset.forName(charset);//throw IllegalCharsetNameException / UnsupportedCharsetException
@@ -119,7 +118,6 @@ public class MailSender {
         return this;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
     public MailSender from(String email) throws MessagingException {
         msg.setFrom(new InternetAddress(email));
         return this;
@@ -212,12 +210,12 @@ public class MailSender {
         }
         return addresses;
     }
-    //endregion  //recipients
 
     private MailSender addRecipients(Message.RecipientType type, Address[] addresses) throws MessagingException {
         msg.addRecipients(type, addresses);
         return this;
     }
+    //endregion  //recipients
 
     public MailSender subject(String subject) throws MessagingException {
         msg.setSubject(subject);
