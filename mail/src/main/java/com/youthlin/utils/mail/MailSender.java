@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -43,7 +44,7 @@ import java.util.Properties;
  *          .ssl(465)   // JDK 7 OK. JDK8 由于安全原因需要替换俩 jar 包
  *          .debug()    // 注释这行关闭调试信息的输出
  *          .toSession()
- *      )//Session 只能调用一次 start
+ *      )
  *      .from("email", "DisplayName")//发件人 email,name
  *      .to("to", "DisplayName")//收件人
  *      .cc("cc")//抄送
@@ -80,6 +81,7 @@ import java.util.Properties;
 @SuppressWarnings({"WeakerAccess", "SameParameterValue", "unused", "UnusedReturnValue"})
 public class MailSender {
     //region //field
+    private static final String[] EMPTY_ARRAY = new String[0];
     private static final String UTF_8 = "UTF-8";//默认字符编码
     private final MimeMultipart content = new MimeMultipart();//邮件的所有内容(body+Attachment)
     private final BodyPart body = new MimeBodyPart();//body
@@ -149,6 +151,14 @@ public class MailSender {
         return to(toAddresses(emails, names));
     }
 
+    public MailSender to(Collection<String> emails) throws MessagingException {
+        return to(toAddresses(emails, null));
+    }
+
+    public MailSender to(Collection<String> emails, Collection<String> names) throws MessagingException {
+        return to(toAddresses(emails, names));
+    }
+
     public MailSender to(Address... addresses) throws MessagingException {
         return addRecipients(Message.RecipientType.TO, addresses);
     }
@@ -166,6 +176,14 @@ public class MailSender {
     }
 
     public MailSender cc(String[] emails, String[] names) throws MessagingException {
+        return cc(toAddresses(emails, names));
+    }
+
+    public MailSender cc(Collection<String> emails) throws MessagingException {
+        return cc(toAddresses(emails, null));
+    }
+
+    public MailSender cc(Collection<String> emails, Collection<String> names) throws MessagingException {
         return cc(toAddresses(emails, names));
     }
 
@@ -189,6 +207,14 @@ public class MailSender {
         return bcc(toAddresses(emails, names));
     }
 
+    public MailSender bcc(Collection<String> emails) throws MessagingException {
+        return bcc(toAddresses(emails, null));
+    }
+
+    public MailSender bcc(Collection<String> emails, Collection<String> names) throws MessagingException {
+        return bcc(toAddresses(emails, names));
+    }
+
     public MailSender bcc(Address... address) throws MessagingException {
         return addRecipients(Message.RecipientType.BCC, address);
     }
@@ -207,6 +233,27 @@ public class MailSender {
         }
         for (int i = 0; i < eLen; i++) {//对不上 或 异常
             addresses[i] = new InternetAddress(emails[i]);
+        }
+        return addresses;
+    }
+
+    private Address[] toAddresses(Collection<String> emails, Collection<String> names) throws AddressException {
+        int eLen = emails.size();
+        Address[] addresses = new Address[eLen];
+        if (names != null && names.size() == eLen) {//email 和 name 能对上时
+            try {
+                String[] nameArr = names.toArray(EMPTY_ARRAY);
+                int i = 0;
+                for (String email : emails) {
+                    addresses[i] = new InternetAddress(email, nameArr[i++], charset);
+                }
+                return addresses;
+            } catch (UnsupportedEncodingException ignore) {
+            }
+        }
+        int i = 0;
+        for (String email : emails) {
+            addresses[i++] = new InternetAddress(email);
         }
         return addresses;
     }
