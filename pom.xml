@@ -16,6 +16,7 @@
         <module>mail</module>
         <module>i18n</module>
         <module>gravatar</module>
+        <module>debug</module>
     </modules>
     <properties>
         <maven.compiler.source>1.6</maven.compiler.source>
