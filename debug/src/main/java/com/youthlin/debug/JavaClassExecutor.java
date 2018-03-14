@@ -87,6 +87,18 @@ public class JavaClassExecutor {
         }
         return sb.toString();
     }
+
+    public static Set<String> getClasspathSet(String... classNames) {
+        Set<String> result = new HashSet<String>();
+        for (String className : classNames) {
+            try {
+                Class<?> clazz = Class.forName(className);
+                result.addAll(getClasspathSet(clazz));
+            } catch (ClassNotFoundException ignore) {
+            }
+        }
+        return result;
+    }
     //endregion
 
     public static String getPathSeparator() {
