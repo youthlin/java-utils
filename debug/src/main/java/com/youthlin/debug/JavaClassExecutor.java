@@ -46,14 +46,7 @@ public class JavaClassExecutor {
 
     public static String getClasspath(Class<?> clazz) {
         Set<String> classpathSet = getClasspathSet(clazz);
-        StringBuilder sb = new StringBuilder();
-        for (String classpath : classpathSet) {
-            if (sb.length() > 0) {
-                sb.append(getPathSeparator());
-            }
-            sb.append(classpath);
-        }
-        return sb.toString();
+        return getClasspath(classpathSet);
     }
 
     public static Set<String> getClasspathSet() {
@@ -82,6 +75,17 @@ public class JavaClassExecutor {
         } else {
             result.add(file.getAbsolutePath());
         }
+    }
+
+    public static String getClasspath(Set<String> classpathSet) {
+        StringBuilder sb = new StringBuilder();
+        for (String classpath : classpathSet) {
+            if (sb.length() > 0) {
+                sb.append(getPathSeparator());
+            }
+            sb.append(classpath);
+        }
+        return sb.toString();
     }
     //endregion
 
