@@ -73,7 +73,10 @@ public class JavaClassExecutor {
                 listFile(result, f);
             }
         } else {
-            result.add(file.getAbsolutePath());
+            String fileName = file.getName();
+            if (fileName.endsWith(".jar") || fileName.endsWith(".zip")) {
+                result.add(file.getAbsolutePath());
+            }
         }
     }
 
