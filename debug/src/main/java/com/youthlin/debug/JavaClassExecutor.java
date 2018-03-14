@@ -12,14 +12,13 @@ import java.util.Set;
  */
 public class JavaClassExecutor {
     private static final String PATH_SEPARATOR = System.getProperty("path.separator");
-    private static final HotSwapClassloader CLASSLOADER = new HotSwapClassloader();
 
     public static Class hackSout(byte[] classByte) {
         try {
             ClassModifier cm = new ClassModifier(classByte);
             byte[] modifiedBytes = cm.modifyUTF8Constant(System.class.getName().replace(".", "/"),
                     HackSystem.class.getName().replace(".", "/"));
-            return CLASSLOADER.loadByte(modifiedBytes);
+            return new HotSwapClassloader().loadByte(modifiedBytes);//每次 new 一个 classloader 不影响下次 load 同名的类
         } catch (Throwable t) {
             throw new HackException(t);
         }
