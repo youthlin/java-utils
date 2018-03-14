@@ -12,4 +12,5 @@ public class HotSwapClassloader extends ClassLoader {
     public Class loadByte(byte[] classBytes) {
         return defineClass(null, classBytes, 0, classBytes.length);
     }
+
 }

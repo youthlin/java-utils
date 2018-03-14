@@ -38,4 +38,5 @@ public class ClassFileManager extends ForwardingJavaFileManager {
     public byte[] getClassBytes() {
         return classFileObject.getClassBytes();
     }
+
 }

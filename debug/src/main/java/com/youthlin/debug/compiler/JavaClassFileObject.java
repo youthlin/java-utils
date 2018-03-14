@@ -26,4 +26,5 @@ public class JavaClassFileObject extends SimpleJavaFileObject {
     public byte[] getClassBytes() {
         return outputStream.toByteArray();
     }
+
 }

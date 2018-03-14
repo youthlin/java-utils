@@ -18,7 +18,7 @@ public class HackSystem {
     public static final PrintStream out = new PrintStream(buffer);
     public static final PrintStream err = out;
 
-    public static String getByfferString() {
+    public static String getOutput() {
         return buffer.toString();
     }
 

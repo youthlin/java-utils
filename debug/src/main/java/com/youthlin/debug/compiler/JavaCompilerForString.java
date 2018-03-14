@@ -18,29 +18,28 @@ public class JavaCompilerForString {
     private static final byte[] EMPTY = new byte[0];
     private static JavaCompiler compiler;
 
-    public static byte[] compile(String fileName, String javaSource) {
-        return compile(fileName, javaSource, "", null);
+    public static byte[] compile(String className, String javaSource) {
+        return compile(className, javaSource, "", null);
     }
 
-    public static byte[] compile(String fileName, String javaSource, String classPath) {
-        return compile(fileName, javaSource, classPath, null);
+    public static byte[] compile(String className, String javaSource, String classPath) {
+        return compile(className, javaSource, classPath, null);
     }
 
-    public static byte[] compile(String fileName, String javaSource, StringWriter out) {
-        return compile(fileName, javaSource, "", out);
+    public static byte[] compile(String className, String javaSource, StringWriter out) {
+        return compile(className, javaSource, "", out);
     }
 
-    public static byte[] compile(String fileName, String javaSource, String classPath, StringWriter out) {
+    public static byte[] compile(String className, String javaSource, String classPath, StringWriter out) {
         JavaCompiler javaCompiler = getCompiler();
         StandardJavaFileManager standardFileManager = javaCompiler.getStandardFileManager(null, null, null);
-        JavaSourceFileObject javaSourceFileObject = new JavaSourceFileObject(fileName, javaSource);
         ClassFileManager fileManager = new ClassFileManager(standardFileManager);
         List<String> options = null;
         if (classPath != null && !classPath.isEmpty()) {
             options = Arrays.asList("-cp", classPath);
         }
-        JavaCompiler.CompilationTask task = javaCompiler.getTask(out, fileManager, null,
-                options,
+        JavaSourceFileObject javaSourceFileObject = new JavaSourceFileObject(className, javaSource);
+        JavaCompiler.CompilationTask task = javaCompiler.getTask(out, fileManager, null, options,
                 null, Collections.singleton(javaSourceFileObject));
         Boolean call = task.call();
         if (call) {
@@ -78,4 +77,5 @@ public class JavaCompilerForString {
             System.out.println(result);
         }
     }
+
 }
