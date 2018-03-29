@@ -1,9 +1,23 @@
 # Java Utils
 [![Build Status](https://travis-ci.org/YouthLin/java-utils.svg?branch=master)](https://travis-ci.org/YouthLin/java-utils)
-1. SMTP Mail Sender
 
-   ```
-   MailSender
+```xml
+<properties>
+    <java.utils.version>1.0.1</java.utils.version>
+</properties>
+```
+1. SMTP Mail Sender
+    ```xml
+    <!-- https://mvnrepository.com/artifact/com.youthlin/mail -->
+    <dependency>
+       <groupId>com.youthlin</groupId>
+       <artifactId>mail</artifactId>
+       <version>${java.utils.version}</version>
+    </dependency>
+    ```
+    
+    ```
+    MailSender
           .newInstance(MailSender.newSessionBuilder()
               .host("host")
               .auth("username", "password")
@@ -33,8 +47,16 @@
      .JAR、.JS、.JSE、.LIB、.LNK、.MDE、.MSC、.MSI、.MSP、.MST、.PIF、
      .SCR、.SCT、.SHB、.SYS、.VB、.VBE、.VBS、.VXD、.WSC、.WSF、.WSH
    // 发给 Gmail 的邮件中附件类型严格受限，参加: https://support.google.com/mail/answer/6590
-   ```
+    ```
 2. I18N
+    ```xml
+    <!-- https://mvnrepository.com/artifact/com.youthlin/i18n -->
+    <dependency>
+       <groupId>com.youthlin</groupId>
+       <artifactId>i18n</artifactId>
+       <version>${java.utils.version}</version>
+    </dependency>
+    ```
     翻译工具类.
     <pre>
     [main]$ xgettext -k__ -k_x:2c,1 -k_n:1,2 -k_nx:3c,1,2 -o resources/Message.pot java/pack/age/Clazz.java --from-code UTF-8 
@@ -54,6 +76,14 @@
     * ...
 
 3. Gravatar
+    ```xml
+    <!-- https://mvnrepository.com/artifact/com.youthlin/gravatar -->
+    <dependency>
+       <groupId>com.youthlin</groupId>
+       <artifactId>gravatar</artifactId>
+       <version>${java.utils.version}</version>
+    </dependency>
+    ```
     ```
         String url = Gravatar.withEmail("youthlin.chen@qunar.com")
                 .extension(".jpg")
@@ -64,6 +94,15 @@
     ```
     
 4. RunTime Debug
+    ```xml
+    <!-- https://mvnrepository.com/artifact/com.youthlin/debug -->
+    <dependency>
+       <groupId>com.youthlin</groupId>
+       <artifactId>debug</artifactId>
+       <version>${java.utils.version}</version>
+    </dependency>
+    ```
+    
     ```
     <servlet>
         <servlet-name>debug</servlet-name>
@@ -76,3 +115,4 @@
     
     ```
     ![Debug](./screenshots/debug.do.png)
+
