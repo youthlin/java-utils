@@ -8,6 +8,11 @@
     <packaging>pom</packaging>
     <version>1.1.0</version>
 
+    <name>Java Utils</name>
+    <description>Some utils for Java: mail sender, gravatar link generator, i18n, debug tool, etc.</description>
+    <url>https://github.com/YouthLin/java-utils</url>
+
+
     <!-- mvn versions:set -DnewVersion=xxx -->
     <!-- mvn versions:update-child-modules -->
     <!-- http://www.cnblogs.com/ilovexiao/p/5663761.html -->
