@@ -53,3 +53,26 @@
     * <code>_n("One Apple", "{0} Apples", n, param)</code>
     * ...
 
+3. Gravatar
+    ```
+        String url = Gravatar.withEmail("youthlin.chen@qunar.com")
+                .extension(".jpg")
+                .defaults(DefaultType.MONSTERID)//随机小怪物
+                .size(80)
+                .getUrl();
+        //https://www.gravatar.com/avatar/7158b0cc5dae9d7527b171166a9b7d74.jpg?s=80&d=monsterid    
+    ```
+    
+4. RunTime Debug
+    ```
+    <servlet>
+        <servlet-name>debug</servlet-name>
+        <servlet-class>com.youthlin.debug.web.DebugServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>debug</servlet-name>
+        <url-pattern>/debug.do</url-pattern>
+    </servlet-mapping>
+    
+    ```
+    ![Debug](./screenshots/debug.do.png)

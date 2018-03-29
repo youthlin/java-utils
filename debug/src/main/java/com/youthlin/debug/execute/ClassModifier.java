@@ -1,4 +1,4 @@
-package com.youthlin.debug;
+package com.youthlin.debug.execute;
 
 /**
  * 创建: youthlin.chen
@@ -7,7 +7,7 @@ package com.youthlin.debug;
 public class ClassModifier {
     private static final int CONSTANT_POOL_COUNT_INDEX = 8;
     private static final int CONSTANT_UTF8_INFO = 1;
-    private static final int[] CONSTANT_ITEM_LENGTH = { -1, -1, -1, 5, 5, 9, 9, 3, 3, 5, 5, 5, 5 };
+    private static final int[] CONSTANT_ITEM_LENGTH = {-1, -1, -1, 5, 5, 9, 9, 3, 3, 5, 5, 5, 5};
     private static final int U1 = 1;
     private static final int U2 = 2;
     private byte[] classByte;

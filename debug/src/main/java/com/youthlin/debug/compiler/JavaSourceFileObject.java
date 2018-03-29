@@ -1,6 +1,5 @@
 package com.youthlin.debug.compiler;
 
-import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import java.io.File;
 import java.io.FileInputStream;

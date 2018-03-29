@@ -1,6 +1,6 @@
 package com.youthlin.debug.compiler;
 
-import com.youthlin.debug.JavaClassExecutor;
+import com.youthlin.debug.execute.JavaClassExecutor;
 
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;

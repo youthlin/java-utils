@@ -1,7 +1,7 @@
 package com.youthlin.debug.web;
 
-import com.youthlin.debug.JavaClassExecutor;
 import com.youthlin.debug.compiler.JavaCompilerForString;
+import com.youthlin.debug.execute.JavaClassExecutor;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -21,6 +21,8 @@ import java.util.Set;
  */
 @MultipartConfig
 public class DebugServlet extends HttpServlet {
+    private static final long serialVersionUID = 1893866012670378385L;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
