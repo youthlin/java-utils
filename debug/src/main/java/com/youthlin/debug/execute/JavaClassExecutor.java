@@ -15,7 +15,33 @@ public class JavaClassExecutor {
     private static final String PATH_SEPARATOR = System.getProperty("path.separator");
     private static final String[] EMPTY_ARR = new String[0];
 
-    public static Class hackSout(byte[] classByte) {
+    /**
+     * 执行给定的 class 类的 main 方法
+     * 首先将类里 {@link System} 替换为{@link HackSystem}
+     * 以拦截所有往 {@link System#out} 输出的内容, 重定向到 {@link HackSystem#out}
+     * 然后 invoke main 方法, 执行给定的类
+     *
+     * @return invoke 无异常, 返回程序中往 {@link System#out} 输出的内容; invoke 异常时, 返回异常堆栈
+     * @see Exception#printStackTrace(java.io.PrintStream)
+     */
+    public static String execute(byte[] classByte) {
+        HackSystem.clearBuffer();
+        try {
+            Class clazz = hackSout(classByte);
+            @SuppressWarnings("unchecked")
+            Method method = clazz.getMethod("main", String[].class);
+            method.invoke(null, (Object) null);
+        } catch (Throwable e) {
+            e.printStackTrace(HackSystem.out);
+            // throw new HackException(e);
+        }
+        return HackSystem.getOutput();
+    }
+
+    /**
+     * 替换 {@link System} 为 {@link HackSystem}
+     */
+    private static Class hackSout(byte[] classByte) {
         try {
             ClassModifier cm = new ClassModifier(classByte);
             byte[] modifiedBytes = cm.modifyUTF8Constant(System.class.getName().replace(".", "/"),
@@ -24,20 +50,6 @@ public class JavaClassExecutor {
         } catch (Throwable t) {
             throw new HackException(t);
         }
-    }
-
-    public static String execute(byte[] classByte) {
-        HackSystem.clearBuffer();
-        Class clazz = hackSout(classByte);
-        try {
-            @SuppressWarnings("unchecked")
-            Method method = clazz.getMethod("main", String[].class);
-            method.invoke(null, (Object) null);
-        } catch (Throwable e) {
-            e.printStackTrace(HackSystem.out);
-            throw new HackException(e);
-        }
-        return HackSystem.getOutput();
     }
 
     //region getClasspath
@@ -65,6 +77,9 @@ public class JavaClassExecutor {
         return getClasspathSetByClass(JavaClassExecutor.class);
     }
 
+    /**
+     * 尝试用正则匹配出代码中的 import 语句, 解出依赖的类
+     */
     public static Set<String> getClasspathSetByCode(String code) {
         Set<String> clazzNameSet = new HashSet<String>();
         Pattern pattern = Pattern.compile("import (.*?);");
@@ -91,6 +106,9 @@ public class JavaClassExecutor {
         return result;
     }
 
+    /**
+     * 获取给定 Class 所在的 classpath 及其可能相关的 classpath
+     */
     public static Set<String> getClasspathSetByClass(Class<?> clazz) {
         Set<String> result = new HashSet<String>();
         String jarPath = ".";
