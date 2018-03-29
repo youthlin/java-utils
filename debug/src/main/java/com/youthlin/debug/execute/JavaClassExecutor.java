@@ -2,9 +2,10 @@ package com.youthlin.debug.execute;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 创建: youthlin.chen
@@ -12,6 +13,7 @@ import java.util.Set;
  */
 public class JavaClassExecutor {
     private static final String PATH_SEPARATOR = System.getProperty("path.separator");
+    private static final String[] EMPTY_ARR = new String[0];
 
     public static Class hackSout(byte[] classByte) {
         try {
@@ -44,23 +46,67 @@ public class JavaClassExecutor {
     }
 
     public static String getClasspath(Class<?> clazz) {
-        Set<String> classpathSet = getClasspathSet(clazz);
+        Set<String> classpathSet = getClasspathSetByClass(clazz);
         return getClasspath(classpathSet);
     }
 
-    public static Set<String> getClasspathSet() {
-        return getClasspathSet(JavaClassExecutor.class);
+    public static String getClasspath(Set<String> classpathSet) {
+        StringBuilder sb = new StringBuilder();
+        for (String classpath : classpathSet) {
+            if (sb.length() > 0) {
+                sb.append(getPathSeparator());
+            }
+            sb.append(classpath);
+        }
+        return sb.toString();
     }
 
-    public static Set<String> getClasspathSet(Class<?> clazz) {
-        String jarPath = clazz.getProtectionDomain().getCodeSource().getLocation().getPath();
-        jarPath = jarPath.substring(0, jarPath.lastIndexOf("/"));
+    public static Set<String> getClasspathSet() {
+        return getClasspathSetByClass(JavaClassExecutor.class);
+    }
+
+    public static Set<String> getClasspathSetByCode(String code) {
+        Set<String> clazzNameSet = new HashSet<String>();
+        Pattern pattern = Pattern.compile("import (.*?);");
+        Matcher matcher = pattern.matcher(code);
+        while (matcher.find()) {
+            String clazzName = matcher.group(1);
+            if (!clazzName.contains("*")) {
+                clazzNameSet.add(clazzName);
+            }
+        }
+        String[] array = clazzNameSet.toArray(EMPTY_ARR);
+        return getClasspathSetByClassName(array);
+    }
+
+    public static Set<String> getClasspathSetByClassName(String... classNames) {
+        Set<String> result = new HashSet<String>();
+        for (String className : classNames) {
+            try {
+                Class<?> clazz = Class.forName(className);
+                result.addAll(getClasspathSetByClass(clazz));
+            } catch (ClassNotFoundException ignore) {
+            }
+        }
+        return result;
+    }
+
+    public static Set<String> getClasspathSetByClass(Class<?> clazz) {
+        Set<String> result = new HashSet<String>();
+        String jarPath = ".";
+        try {
+            result.add(clazz.getResource("/").getPath());
+            jarPath = clazz.getProtectionDomain().getCodeSource().getLocation().getPath();
+        } catch (Exception ignore) {
+        }
         File dir = new File(jarPath);
         if (!dir.exists()) {
-            return Collections.emptySet();
+            return result;
         }
-        Set<String> result = new HashSet<String>();
-        listFile(result, dir);
+        if (dir.isFile()) {
+            dir = dir.getParentFile();
+        }
+        listFile(result, dir);//.jar files
         return result;
     }
 
@@ -77,29 +123,6 @@ public class JavaClassExecutor {
                 result.add(file.getAbsolutePath());
             }
         }
-    }
-
-    public static String getClasspath(Set<String> classpathSet) {
-        StringBuilder sb = new StringBuilder();
-        for (String classpath : classpathSet) {
-            if (sb.length() > 0) {
-                sb.append(getPathSeparator());
-            }
-            sb.append(classpath);
-        }
-        return sb.toString();
-    }
-
-    public static Set<String> getClasspathSet(String... classNames) {
-        Set<String> result = new HashSet<String>();
-        for (String className : classNames) {
-            try {
-                Class<?> clazz = Class.forName(className);
-                result.addAll(getClasspathSet(clazz));
-            } catch (ClassNotFoundException ignore) {
-            }
-        }
-        return result;
     }
     //endregion
 

@@ -59,23 +59,27 @@ public class JavaCompilerForString {
         return compiler;
     }
 
+
     public static void main(String[] args) {
         StringWriter out = new StringWriter();
-        byte[] bytes = JavaCompilerForString.compile("Test",
-                "import com.youthlin.debug.*;\n"
-                        + "import java.util.Arrays;\n"
-                        + "public class Test{\n"
-                        + "  public static void main(String[] args){\n"
-                        + "      HackSystem.out.println(Arrays.toString(args));\n"
-                        + "      System.out.println(\"测试TEST你好\");\n"
-                        + "  }\n"
-                        + "}\n", out);
+        String javaSource = "import com.youthlin.debug.execute.HackSystem;\n"
+                + "import java.util.Arrays;\n"
+                + "public class Test{\n"
+                + "  public static void main(String[] args){\n"
+                + "      HackSystem.out.println(Arrays.toString(args));\n"
+                + "      System.out.println(\"测试TEST你好\");\n"
+                + "  }\n"
+                + "}\n";
+        System.out.println(JavaClassExecutor.getClasspathSetByCode(javaSource));
+
+        byte[] bytes = JavaCompilerForString.compile("Test", javaSource, out);
         if (bytes.length == 0) {
             System.out.println(out.toString());
         } else {
             String result = JavaClassExecutor.execute(bytes);
             System.out.println(result);
         }
+
     }
 
 }

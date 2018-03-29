@@ -51,8 +51,9 @@ public class DebugServlet extends HttpServlet {
         if (code != null && !code.isEmpty()) {
             if (JavaCompilerForString.supportCompiler()) {
                 Set<String> classpath = JavaClassExecutor.getClasspathSet();
+                classpath.addAll(JavaClassExecutor.getClasspathSetByCode(code));
                 if (importClass != null && !importClass.isEmpty()) {
-                    classpath.addAll(JavaClassExecutor.getClasspathSet(importClass.split("[,\\s]")));
+                    classpath.addAll(JavaClassExecutor.getClasspathSetByClassName(importClass.split("[,\\s]")));
                 }
                 StringWriter out = new StringWriter();
                 byte[] classBytes = JavaCompilerForString

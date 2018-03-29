@@ -6,7 +6,7 @@
     <groupId>com.youthlin</groupId>
     <artifactId>utils</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
 
     <name>Java Utils</name>
     <description>Some utils for Java: mail sender, gravatar link generator, i18n, debug tool, etc.</description>
