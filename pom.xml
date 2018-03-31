@@ -6,7 +6,7 @@
     <groupId>com.youthlin</groupId>
     <artifactId>utils</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.1</version>
 
     <name>Java Utils</name>
     <description>Some utils for Java: mail sender, gravatar link generator, i18n, debug tool, etc.</description>
@@ -27,6 +27,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <gpg.executable>gpg2</gpg.executable>
     </properties>
     <dependencyManagement>
         <dependencies>
