@@ -6,15 +6,33 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@SuppressWarnings({ "WeakerAccess", "unused" })
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class Gravatar {
     public static final String PREFIX = "https://www.gravatar.com/avatar/";
-    private String prefix = PREFIX;//URL 前缀
-    private String md5 = null;//电子邮件地址 md5
-    private String extension = null;//后缀，如 .jpg
-    private String defaultUrl = null;//默认头像地址
-    private String forceDefault = null;//即使在 Gravatar 设置了也强制使用默认头像
-    private int size = 0;//图片大小，正方形边长
+    /**
+     * URL 前缀
+     */
+    private String prefix = PREFIX;
+    /**
+     * 电子邮件地址 md5
+     */
+    private String md5 = null;
+    /**
+     * 后缀，如 .jpg
+     */
+    private String extension = null;
+    /**
+     * 默认头像地址
+     */
+    private String defaultUrl = null;
+    /**
+     * 即使在 Gravatar 设置了也强制使用默认头像
+     */
+    private String forceDefault = null;
+    /**
+     * 图片大小，正方形边长
+     */
+    private int size = 0;
 
     public enum DefaultType {
         /**
@@ -108,8 +126,8 @@ public final class Gravatar {
     public Gravatar defaults(String url) {
         try {
             defaultUrl = URLEncoder.encode(url, "UTF-8");
-        } catch (UnsupportedEncodingException ignore) {
-            throw new AssertionError(ignore);
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
         }
         return this;
     }
@@ -177,6 +195,6 @@ public final class Gravatar {
                 .getUrl();
         //https://www.gravatar.com/avatar/7158b0cc5dae9d7527b171166a9b7d74.jpg?s=80&d=monsterid
         System.out.println(url);
-        System.out.printf(Gravatar.getUrlWithEmail("youthlin.chen@qunar.com"));
+        System.out.print(Gravatar.getUrlWithEmail("youthlin.chen@qunar.com"));
     }
 }

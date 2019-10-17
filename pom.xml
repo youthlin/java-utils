@@ -6,7 +6,7 @@
     <groupId>com.youthlin</groupId>
     <artifactId>utils</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.1</version>
+    <version>2.0.0-SNAPSHOT</version>
 
     <name>Java Utils</name>
     <description>Some utils for Java: mail sender, gravatar link generator, i18n, debug tool, etc.</description>
@@ -28,6 +28,7 @@
         <maven.compiler.target>1.6</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.executable>gpg2</gpg.executable>
+        <jdk.module.name>com.youthlin.utils</jdk.module.name>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -65,6 +66,17 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>${jdk.module.name}</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>

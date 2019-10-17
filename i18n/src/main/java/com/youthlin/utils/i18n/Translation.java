@@ -12,7 +12,6 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-
 /**
  * 翻译工具类.
  * <p>
@@ -67,7 +66,7 @@ public class Translation {
     private static Set<ResourceBundle> catalogs = new HashSet<ResourceBundle>();
     private static boolean verbose = false;
 
-    private static ResourceBundle r = getBundle("Message");
+    private static ResourceBundle r = getBundle("com.youthlin.utils.i18n.Message");
 
     static {
         addResource(DEFAULT_DOMAIN, r);
