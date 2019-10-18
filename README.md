@@ -3,7 +3,7 @@
 
 ```xml
 <properties>
-    <java.utils.version>1.0.1</java.utils.version>
+    <java.utils.version>2.0.0</java.utils.version>
 </properties>
 ```
 1. SMTP Mail Sender

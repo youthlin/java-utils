@@ -33,6 +33,7 @@ import java.util.Set;
  *
  * @author YouthLin Chen
  * @see <a href="http://youthlin.com/?p=1315">http://youthlin.com/20161315.html</a>
+ * @see MessageFormat
  */
 @SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue", "SameParameterValue"})
 public class Translation {
